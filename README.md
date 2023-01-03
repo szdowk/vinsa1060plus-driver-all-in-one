@@ -1,15 +1,23 @@
-# 10moons-driver
+# 10moons-driver-vin1060plus
 
-Simple driver for 10moons T503 tablet for linux
+Forked from Alex-S-V ( thanks dude for the pyUSB intro ) 
+
+![Aliexpress Graphics Tablet VINSA 1060plus](http://eng.10moons.com/upload/2018/06/11/201806112311552.jpg)
+![!0moons Graphics Tablet product homepage](http://eng.10moons.com/info5494.html)
+Aliexpress equivalent sold under VINSA brand.
+
+This is a Simple driver with pyUSB code modified to handle the interaction events of the VINSA 1060Plus graphics tablet, that includes a passive two button pen.
+
+Linux detects it as a T501 GoTOP tablet,  hence 
 
 ## About
 
 Driver which provides basic functionality for 10moons T503 tablet:
-* 4 buttons on the tablet itself
-* Correct X and Y positioning
-* Pressure sensitivity
+* 12 buttons on the tablet itself
+* Correct X and Y positioning (two active area modes present:  Android Active Area & Full Tablet Active Area)
+* Pressure sensitivity 
 
-Tablet has 4096 levels in both axes and 2047 levels of pressure.
+Tablet has 4096 levels in both axes and 2047 levels of pressure ( Product description says 8092, but actual output readings are 2047 max).
 
 ## How to use
 
@@ -22,13 +30,13 @@ git clone https://github.com/alex-s-v/10moons-driver.git
 Then install all dependencies listed in _requirements.txt_ file either using python virtual environments or not.
 
 ```
-python -m pip install -r requirements.txt
+python3 -m pip install -r requirements.txt
 ```
 
 Connect tablet to your computer and then run _driver.py_ file with sudo privileges.
 
 ```
-sudo python driver.py
+sudo python3 driver-vin1060plus.py
 ```
 
 **You need to connect your tablet and run the driver prior to launching a drawing software otherwise the device will not be recognized by it.**
