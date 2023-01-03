@@ -3,7 +3,9 @@
 Forked from Alex-S-V ( thanks dude for the pyUSB intro ) 
 
 ![Aliexpress Graphics Tablet VINSA 1060plus](http://eng.10moons.com/upload/2018/06/11/201806112311552.jpg)
+
 [10moons Graphics Tablet product homepage](http://eng.10moons.com/info5494.html)
+
 [Aliexpress equivalent sold under VINSA brand. --- Download User Manual](http://blog.ping-it.cn/h/8/sms.pdf)
 
 This is a Simple driver with pyUSB code modified to handle the interaction events of the VINSA 1060Plus graphics tablet, that includes a passive two button pen.
@@ -32,26 +34,35 @@ The person to discover this "hack" was Mr.Digimend himself and thanks to the [Yo
 
 
 ## How to install
+1. Clone or Dowload then install  [`10moons-tools`](https://github.com/DIGImend/10moons-tools)
+2. run  `lsusb` ... identify  BUS and DEVICE numbers that linux detects from Graphics Tablet
+    e.g. Bus 001 Device 003: ID 08f2:6811 Gotop Information Inc. [T501] Driver Inside Tablet
+3. run  `sudo 10moons-tools BUSnum DEVICEnumber`
+    e.g. sudo 10moons-tools 1 3
+4. Clone or download then install this repository.
+    4.1. 
+        git clone https://github.com/f-caro/10moons-driver-vin1060plus.git
+    4.2. Then install all dependencies listed in `_requirements.txt_` file either using python virtual environments or not.
+        python3 -m pip install -r requirements.txt
 
-Clone or download this repository.
+5. run python driver ---  `sudo python3 driver-vin1060plus.py`
 
-```
-git clone https://github.com/alex-s-v/10moons-driver.git
-```
+6. remember to tap the graphics tablet with the passive pen, so that the linux xinput can list it as a virtual pointing device (a quirk maybe associated with vin1060plus ?!)
 
-Then install all dependencies listed in _requirements.txt_ file either using python virtual environments or not.
+7.  In case of multiple monitors connected.
+    7.1. run `xrandr` --->  to identify the name of the Display that you want to limit your tablet x & y coords.
+        e.g.  DisplayPort-1
+    7.2. run `xinput`  ---> to list all virtual devices,  identify the virtual core pointer associated with tablet pen
+        e.g.   ↳ 10moons-pen Pen (0)                     	id=17	[slave  pointer  (2)]
+    7.3. configure xinput to restrict x&y coords to relevant monitor
+        e.g.  xinput map-to-output 17 DisplayPort-1
 
-```
-python3 -m pip install -r requirements.txt
-```
-
-Connect tablet to your computer and then run _driver.py_ file with sudo privileges.
-
-```
-sudo python3 driver-vin1060plus.py
-```
 
 **You need to connect your tablet and run the driver prior to launching a drawing software otherwise the device will not be recognized by it.**
+
+
+
+
 
 ## Configuring tablet
 
@@ -71,6 +82,7 @@ python -c "from evdev import ecodes; print([x for x in dir(ecodes) if 'KEY' in x
 ## Credits
 
 Some parts of code are taken from: https://github.com/Mantaseus/Huion_Kamvas_Linux
+Other parts taken from:  
 
 ## Known issues
 
