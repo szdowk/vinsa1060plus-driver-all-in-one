@@ -85,7 +85,7 @@ The person to discover this "hack" was Mr.Digimend himself and thanks to the [Yo
 
 ## Configuring tablet
 
-Configuration of the driver placed in _config.yaml_ file.
+Configuration of the driver placed in `config-vin1060plus.yml` file.
 
 You may need to change the *vendor_id* and the *product_id* but I'm not sure (You device can have the same values as mine, but if it is not you can run the *lsusb* command to find yours).
 
