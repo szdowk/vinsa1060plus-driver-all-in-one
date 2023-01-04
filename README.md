@@ -93,10 +93,33 @@ Buttons assigned from in the order from left to right. You can assign to them an
 
 If you find that using this driver with your tablet results in reverse axis or directions (or both), you can modify parameters *swap_axis*, *swap_direction_x*, and *swap_direction_y* by changing false to true and another way around.
 
-To list all the possible key codes you may run:
+## Changing Button/Key shortcuts
+
+`config-vin1060plus.yml` contains a Key code list ( variable `tablet_buttons` ) that allows the user to edit the 12 buttons found on the left-side of the graphics tablet.
+
+To list all the possible Key codes you may run:
 ```
 python -c "from evdev import ecodes; print([x for x in dir(ecodes) if 'KEY' in x])"
 ```
+example output:
+```
+['EV_KEY', 'KEY', 'KEY_0', 'KEY_1', 'KEY_102ND', 'KEY_10CHANNELSDOWN', 'KEY_10CHANNELSUP', 'KEY_2', 'KEY_3', 'KEY_3D_MODE', 'KEY_4', 'KEY_5', 'KEY_6', 'KEY_7', 'KEY_8', 'KEY_9',...
+
+```
+`config-vin1060plus.yml` also contains a BTN code list ( variable `pen_buttons` ) that allows the user to edit the 2 buttons found on passive stylus pen.
+
+To list all the possible Mouse/Stylus BTN codes you may run:
+```
+python -c "from evdev import ecodes; print([x for x in dir(ecodes) if 'BTN' in x])"
+```
+example output:
+```
+['BTN', 'BTN_0', 'BTN_1', 'BTN_2', 'BTN_3', 'BTN_4', 'BTN_5', 'BTN_6', 'BTN_7', 'BTN_8', 'BTN_9', 'BTN_A', 'BTN_B', 'BTN_BACK', 'BTN_BASE', 'BTN_BASE2',...
+```
+
+* Useful Doc explaining how the Kernel categorises and uses those ecodes : https://www.kernel.org/doc/Documentation/input/event-codes.txt
+* Input-Event-codes Src from Github : https://github.com/torvalds/linux/blob/master/include/uapi/linux/input-event-codes.h
+
 
 ## Credits
 
@@ -132,4 +155,6 @@ The forum that got me started with finding a simple solution to my cheap graphic
 * PDF USB.org  Device Class Definition for Human Interface Devices Firmware Specification : https://www.usb.org/sites/default/files/documents/hid1_11.pdf
 * Digimend howto do diagnostics when trying out new tablets in Linux : http://digimend.github.io/support/howto/trbl/diagnostics/
 * 10moons 10x6 tablet homepage : http://eng.10moons.com/info5494.html  :::  picture revealing possible circuit schematic ??  http://eng.10moons.com/info5494.html
+* libUSB C library initialization/deinitialization : https://libusb.sourceforge.io/api-1.0/group__libusb__lib.html#details
+* USB in a Nutshell - tutorial/howtos/references : https://www.beyondlogic.org/usbnutshell/usb1.shtml
 * 
