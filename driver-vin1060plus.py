@@ -61,7 +61,9 @@ if(DEBUG) : print("btn_events :: ", btn_events)
 # Find the device
 dev = usb.core.find(idVendor=config["vendor_id"], idProduct=config["product_id"])
 # Select end point for reading second interface [2] for actual data
-# I don't know what [0] and [1] are used for
+# Interface[0] associated Internal USB storage (labelled as CDROM drive)
+# Interface[1] useful to map 'Full Tablet Active Area' -- outputs 64 bytes of xinput events
+# Interface[2] maps to the 'AndroidActive Area' --- outputs 8 bytes of xinput events ( but only before  ./10moons-probe is executed)
 if(DEBUG) : print(dev)
 if(DEBUG) : print("--------------------------------")
 ep = dev[0].interfaces()[1].endpoints()[0]
