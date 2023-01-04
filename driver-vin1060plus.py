@@ -9,7 +9,7 @@ from evdev import UInput, ecodes, AbsInfo
 import usb
 import yaml
 
-DEBUG = True	# = True --> Useful when inspecting tablet behaviour and pen interactions
+DEBUG = False	# = True --> Useful when inspecting tablet behaviour and pen interactions
 
 path = os.path.join(os.path.dirname(__file__), "config-vin1060plus.yaml")
 # Loading tablet configuration
@@ -114,7 +114,8 @@ while True:
         #array('B', [5, 128, 161, 13, 2, 9, 0, 0])
 
         
-        #When it works on full 10x6" full area (Top-left point, just under VirtualMediaShortcut keys)
+        #When it works on full 10x6" full area 
+        #(Top-left point, just under VirtualMediaShortcut keys)
         #array('B', [6, 0, 0, 0, 0, 5, 37, 6, 46, 2, 5, 255, 51, 0, 0, 0, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
         #(bottom-right corner)
         #array('B', [6, 15, 255, 15, 255, 6, 192, 6, 46, 2, 5, 255, 51, 15, 255, 0, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
