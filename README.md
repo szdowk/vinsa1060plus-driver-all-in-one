@@ -44,11 +44,13 @@ The person to discover this "hack" was Mr.Digimend himself and thanks to the [Yo
     e.g. sudo 10moons-tools 1 3
     ```
 4. Clone or download then install this repository.
-  4.1. 
+  
+4.1. 
     ```
     git clone https://github.com/f-caro/10moons-driver-vin1060plus.git
     ```
-  4.2. Then install all dependencies listed in `_requirements.txt_` file either using python virtual environments or not.
+  
+4.2. Then install all dependencies listed in `_requirements.txt_` file either using python virtual environments or not.
     ```
     python3 -m pip install -r requirements.txt
     ```
@@ -58,15 +60,18 @@ The person to discover this "hack" was Mr.Digimend himself and thanks to the [Yo
 6. remember to `TAP` the graphics tablet with the passive pen, so that linux `xinput` can list it as a virtual pointing device (a quirk maybe associated with vin1060plus ?!)
 
 7.  In case of multiple monitors connected.
-  7.1. run `xrandr` --->  to identify the name of the Display that you want to limit your tablet x & y coords.
+  
+7.1. run `xrandr` --->  to identify the name of the Display that you want to limit your tablet x & y coords.
     ```
     e.g.  DisplayPort-1
     ```
-  7.2. run `xinput`  ---> to list all virtual devices,  identify the virtual core pointer associated with tablet pen
+  
+7.2. run `xinput`  ---> to list all virtual devices,  identify the virtual core pointer associated with tablet pen
     ```
     e.g.   ↳ 10moons-pen Pen (0)                     	id=17	[slave  pointer  (2)]
     ```
-  7.3. configure xinput to restrict x&y coords to relevant monitor
+  
+7.3. configure xinput to restrict x&y coords to relevant monitor
     ```
     e.g.  xinput map-to-output 17 DisplayPort-1
     ```
