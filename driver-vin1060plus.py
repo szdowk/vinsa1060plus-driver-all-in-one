@@ -94,8 +94,10 @@ pressed = -1
 # Direction and axis configuration
 max_x = config["pen"]["max_x"] * config["settings"]["swap_direction_x"]
 max_y = config["pen"]["max_y"] * config["settings"]["swap_direction_y"]
-if config["settings"]["vin1060plus"]:
-    x1, x2, y1, y2 = (1, 2, 3, 4) 
+if config["settings"]["swap_axis"]:
+    y1, y2, x1, x2 = (1, 2, 3, 4) 
+else:
+    x1, x2, y1, y2 = (1, 2, 3, 4)
     
 #Pen pressure thresholds:
 pressure_max = config["pen"]["max_pressure"]
