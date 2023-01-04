@@ -96,8 +96,35 @@ python -c "from evdev import ecodes; print([x for x in dir(ecodes) if 'KEY' in x
 ## Credits
 
 Some parts of code are taken from: https://github.com/Mantaseus/Huion_Kamvas_Linux
-Other parts taken from:  
+
+Other parts taken from:  https://github.com/alex-s-v/10moons-driver
+
+All inspiration tricks and tactics taken from : https://github.com/DIGImend/10moons-tools
+
+Together with howto videos from DigiMend :  https://www.youtube.com/watch?v=WmnSwjlpRBE
+
+DigiMend conference talk on interfacing grahics tablets in Linux:  https://www.youtube.com/watch?v=Qi73_QFSlpo
+
+The forum that got me started with finding a simple solution to my cheap graphics tablet purchase:  https://github.com/DIGImend/digimend-kernel-drivers/issues/182
 
 ## Known issues
 
-Buttons on the pen itself do not work and hence not specified. I don't know if it's the issue only on my device or it's a common problem.
+* Pressure sensitivity is actually Z-axis height,  where digital 0 is approx 2mm below the graphical tablet surface and digital 8192 is approx 25mm above the graphical tablet. Useful "Pressure sensitivity" values show up in the range of digital 400 and digital 2048.  In `config-vin1060plus.yml` file,  the property  `pressure_contact_threshold` was chosen by trial and error.  Colder temperatures affect the "pressure sensitivity" range.
+
+## TODOS
+
+* Map the 10 "virtual buttons" found on the top-side of the graphics tablet active area.  `( mute, vol_dwn, vol_up, music_player, play_pause, prev_song, next_song, home_btn, calc_btn, desktop_view )`.  `home_btn, calc_btn, desktop_view` works after plugging in usb tablet, but before running the `./10moons-probe`  command.
+
+* Allow the Graphics App (e.g. Gimp, Scribus, Pix, Inkscape etc. ) to make use of the "pressure sensitivity" measurement. I think the issue lies with  `vpen.write(ecodes.EV_KEY, ecodes.BTN_TOUCH, 0)`  and  `ecodes.BTN_MOUSE` conflict.  `BTN_TOUCH` does not execute event, while  `BTN_MOUSE` does. ???
+
+* Use its linear Z-axis "pressure sensitivity" measurements and map it to a non-linear function (maybe bezzier-curve) that simulates more natural pen strokes. :)
+
+# Useful references
+
+* Docs to Python source code of UInput class :  https://python-evdev.readthedocs.io/en/latest/_modules/evdev/uinput.html
+* pyUSB tutorial howto : https://github.com/pyusb/pyusb/blob/master/docs/tutorial.rst
+* wireshark tips on howto filter USB traffic ( [better to use the video from Digimend](https://www.youtube.com/watch?v=WmnSwjlpRBE) ) : https://osqa-ask.wireshark.org/questions/53919/how-can-i-precisely-specify-a-usb-device-to-capture-with-tshark/  :::   howto configure in Linux : https://wiki.wireshark.org/CaptureSetup/USB  :::  tutorial with step-by-step screenshots : https://github.com/liquidctl/liquidctl/blob/main/docs/developer/capturing-usb-traffic.md
+* PDF USB.org  Device Class Definition for Human Interface Devices Firmware Specification : https://www.usb.org/sites/default/files/documents/hid1_11.pdf
+* Digimend howto do diagnostics when trying out new tablets in Linux : http://digimend.github.io/support/howto/trbl/diagnostics/
+* 10moons 10x6 tablet homepage : http://eng.10moons.com/info5494.html  :::  picture revealing possible circuit schematic ??  http://eng.10moons.com/info5494.html
+* 
