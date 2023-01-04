@@ -162,6 +162,10 @@ The forum that got me started with finding a simple solution to my cheap graphic
 
 * Pressure sensitivity is actually Z-axis height,  where digital 0 is approx 2mm below the graphical tablet surface and digital 8192 is approx 25mm above the graphical tablet. Useful "Pressure sensitivity" values show up in the range of digital 400 and digital 2048.  In `config-vin1060plus.yml` file,  the property  `pressure_contact_threshold` was chosen by trial and error.  Colder temperatures affect the "pressure sensitivity" range.
 
+* `DEBUG = True` , [flag variable exists](https://github.com/f-caro/10moons-driver-vin1060plus/blob/a9cb0839de7a56f56fe0facc96c7e4c2cf0e86de/driver-vin1060plus.py#L12) that helps debug the typical behaviour surrounding the driver interaction with T501 graphics compatible tablet.  To be honest, it's just print() statements alllll theee waaayyyy downnnn. :)
+
+
+
 ## TODOS
 
 * Map the 10 "virtual buttons" found on the top-side of the graphics tablet active area.  `( mute, vol_dwn, vol_up, music_player, play_pause, prev_song, next_song, home_btn, calc_btn, desktop_view )`.  `home_btn, calc_btn, desktop_view` works after plugging in usb tablet, but before running the `./10moons-probe`  command.
@@ -171,6 +175,8 @@ The forum that got me started with finding a simple solution to my cheap graphic
 * Use its linear Z-axis "pressure sensitivity" measurements and map it to a non-linear function (maybe bezzier-curve) that simulates more natural pen strokes. :)
 
 * Is there a way with [pyUSB transfer bytecode]() to the VINSA1060plus T501 microcontroller that can enable one to skip the `./10moons-probe` code execution ?!?!
+
+* Refactor `driver-vin1060plus.py`.
 
 # Useful references
 
