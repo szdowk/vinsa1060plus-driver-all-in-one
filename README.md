@@ -28,7 +28,7 @@ Thanks to [Digimend - https://github.com/DIGImend](https://github.com/DIGImend) 
 
 Unfortuantely, Mr Digimend has chosen not to further develop the driver applicable to VINSA 1060plus, due to the inaccurate information transmitted between the T501 chipset and the USB driver --> [Live recording of Mr DIGIMEND working on 10moons tablet debug and analysis.  Awesome to see the master at work :)](https://www.youtube.com/watch?v=WmnSwjlpRBE).
 
-So an alternative workaround was needed.  In steps Alex-S-V with his pyUSB implementation of the T503 driver --- together with the [Digimend 10moons-Probe tool](https://github.com/DIGImend/10moons-tools),  it has the particular effect of switching the Graphics Tablet out of AndroidActiveArea Mode and into FullTabletArea mode.  I will need to ask the original author (Mr.Digimend) how he identified the hex string to transmit to the tablet (probe.c src: line#165 ---> SET_REPORT(0x0308, 0x08, 0x04, 0x1d, 0x01, 0xff, 0xff, 0x06, 0x2e); )[https://github.com/DIGImend/10moons-tools/blob/6cc7c40c50cb58fefe4e732f6a94fac75c9e4859/10moons-probe.c#L165]
+So an alternative workaround was needed.  In steps Alex-S-V with his pyUSB implementation of the T503 driver --- together with the [Digimend 10moons-Probe tool](https://github.com/DIGImend/10moons-tools),  it has the particular effect of switching the Graphics Tablet out of AndroidActiveArea Mode and into FullTabletArea mode.  I will need to ask the original author (Mr.Digimend) how he identified the hex string to transmit to the tablet [ (probe.c src: line#165 ---> SET_REPORT(0x0308, 0x08, 0x04, 0x1d, 0x01, 0xff, 0xff, 0x06, 0x2e); ) ] (https://github.com/DIGImend/10moons-tools/blob/6cc7c40c50cb58fefe4e732f6a94fac75c9e4859/10moons-probe.c#L165)
 
 The person to discover this "hack" was Mr.Digimend himself and thanks to the [Youtube video that he uploaded time-stamp @1:40.11](https://youtu.be/WmnSwjlpRBE?t=6011) he shows that usbhid-dump  output when in Android-Active-Area Mode (8 byte TX)  vs  the required  Full-Tablet-Active-Area mode ( 64 byte TX).
 
@@ -93,6 +93,15 @@ Buttons assigned from in the order from left to right. You can assign to them an
 
 If you find that using this driver with your tablet results in reverse axis or directions (or both), you can modify parameters *swap_axis*, *swap_direction_x*, and *swap_direction_y* by changing false to true and another way around.
 
+for example:  Rotating tablet in portrait position ( with buttons furthest from person )
+    ```
+    settings:
+        swap_axis: true
+        swap_direction_x: true
+        swap_direction_y: false
+    ```
+Not a nice experience, feels weird --- but at least it is nice to know that you can do such a thing. (Thanks Alex-S-V for the ground work).
+
 ## Changing Button/Key shortcuts
 
 `config-vin1060plus.yml` contains a Key code list ( variable `tablet_buttons` ) that allows the user to edit the 12 buttons found on the left-side of the graphics tablet.
@@ -117,23 +126,37 @@ example output:
 ['BTN', 'BTN_0', 'BTN_1', 'BTN_2', 'BTN_3', 'BTN_4', 'BTN_5', 'BTN_6', 'BTN_7', 'BTN_8', 'BTN_9', 'BTN_A', 'BTN_B', 'BTN_BACK', 'BTN_BASE', 'BTN_BASE2',...
 ```
 
-* Useful Doc explaining how the Kernel categorises and uses those ecodes : https://www.kernel.org/doc/Documentation/input/event-codes.txt
-* Input-Event-codes Src from Github : https://github.com/torvalds/linux/blob/master/include/uapi/linux/input-event-codes.h
+> Useful Doc explaining how the Kernel categorises and uses those ecodes : 
+  https://www.kernel.org/doc/Documentation/input/event-codes.txt
 
+> Input-Event-codes Src from Github : 
+  https://github.com/torvalds/linux/blob/master/include/uapi/linux/input-event-codes.h
+
+## Changing Virtual Button shortcuts
+
+TODO --->
 
 ## Credits
 
-Some parts of code are taken from: https://github.com/Mantaseus/Huion_Kamvas_Linux
+> Some parts of code are taken from: 
+  https://github.com/Mantaseus/Huion_Kamvas_Linux
 
-Other parts taken from:  https://github.com/alex-s-v/10moons-driver
+> Other parts taken from:  
+  https://github.com/alex-s-v/10moons-driver
 
-All inspiration tricks and tactics taken from : https://github.com/DIGImend/10moons-tools
+> All inspiration tricks and tactics taken from : 
+  https://github.com/DIGImend/10moons-tools
 
-Together with howto videos from DigiMend :  https://www.youtube.com/watch?v=WmnSwjlpRBE
+> Together with howto videos from DigiMend :  
+  https://www.youtube.com/watch?v=WmnSwjlpRBE
 
-DigiMend conference talk on interfacing grahics tablets in Linux:  https://www.youtube.com/watch?v=Qi73_QFSlpo
+> DigiMend conference talk on interfacing grahics tablets in Linux:  
+  https://www.youtube.com/watch?v=Qi73_QFSlpo
 
-The forum that got me started with finding a simple solution to my cheap graphics tablet purchase:  https://github.com/DIGImend/digimend-kernel-drivers/issues/182
+The forum that got me started with finding a simple solution to my cheap graphics tablet purchase:  
+
+> "Please Add support for 10moons 10*6 inch Graphics Tablet #182" 
+  https://github.com/DIGImend/digimend-kernel-drivers/issues/182
 
 ## Known issues
 
@@ -146,6 +169,8 @@ The forum that got me started with finding a simple solution to my cheap graphic
 * Allow the Graphics App (e.g. Gimp, Scribus, Pix, Inkscape etc. ) to make use of the "pressure sensitivity" measurement. I think the issue lies with  `vpen.write(ecodes.EV_KEY, ecodes.BTN_TOUCH, 0)`  and  `ecodes.BTN_MOUSE` conflict.  `BTN_TOUCH` does not execute event, while  `BTN_MOUSE` does. ???
 
 * Use its linear Z-axis "pressure sensitivity" measurements and map it to a non-linear function (maybe bezzier-curve) that simulates more natural pen strokes. :)
+
+* Is there a way with [pyUSB transfer bytecode]() to the VINSA1060plus T501 microcontroller that can enable one to skip the `./10moons-probe` code execution ?!?!
 
 # Useful references
 
