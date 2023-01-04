@@ -1,6 +1,6 @@
 # 10moons-driver-vin1060plus
 
-Forked from Alex-S-V ( thanks dude for the pyUSB intro ) 
+Forked from [Alex-S-V](https://github.com/alex-s-v/10moons-driver) ( thanks dude for the pyUSB and T503 case study) 
 
 ![Aliexpress Graphics Tablet VINSA 1060plus](http://eng.10moons.com/upload/2018/06/11/201806112311552.jpg)
 
@@ -34,28 +34,42 @@ The person to discover this "hack" was Mr.Digimend himself and thanks to the [Yo
 
 
 ## How to install
-1. Clone or Dowload then install  [`10moons-tools`](https://github.com/DIGImend/10moons-tools)
+1. Clone or Download then install  [`10moons-tools`](https://github.com/DIGImend/10moons-tools)
 2. run  `lsusb` ... identify  BUS and DEVICE numbers that linux detects from Graphics Tablet
+    ```
     e.g. Bus 001 Device 003: ID 08f2:6811 Gotop Information Inc. [T501] Driver Inside Tablet
+    ```
 3. run  `sudo 10moons-tools BUSnum DEVICEnumber`
+    ```
     e.g. sudo 10moons-tools 1 3
+    ```
 4. Clone or download then install this repository.
-    4.1. 
-        git clone https://github.com/f-caro/10moons-driver-vin1060plus.git
-    4.2. Then install all dependencies listed in `_requirements.txt_` file either using python virtual environments or not.
-        python3 -m pip install -r requirements.txt
+  4.1. 
+    ```
+    git clone https://github.com/f-caro/10moons-driver-vin1060plus.git
+    ```
+  4.2. Then install all dependencies listed in `_requirements.txt_` file either using python virtual environments or not.
+    ```
+    python3 -m pip install -r requirements.txt
+    ```
 
 5. run python driver ---  `sudo python3 driver-vin1060plus.py`
 
-6. remember to tap the graphics tablet with the passive pen, so that the linux xinput can list it as a virtual pointing device (a quirk maybe associated with vin1060plus ?!)
+6. remember to `TAP` the graphics tablet with the passive pen, so that linux `xinput` can list it as a virtual pointing device (a quirk maybe associated with vin1060plus ?!)
 
 7.  In case of multiple monitors connected.
-    7.1. run `xrandr` --->  to identify the name of the Display that you want to limit your tablet x & y coords.
-        e.g.  DisplayPort-1
-    7.2. run `xinput`  ---> to list all virtual devices,  identify the virtual core pointer associated with tablet pen
-        e.g.   ↳ 10moons-pen Pen (0)                     	id=17	[slave  pointer  (2)]
-    7.3. configure xinput to restrict x&y coords to relevant monitor
-        e.g.  xinput map-to-output 17 DisplayPort-1
+  7.1. run `xrandr` --->  to identify the name of the Display that you want to limit your tablet x & y coords.
+    ```
+    e.g.  DisplayPort-1
+    ```
+  7.2. run `xinput`  ---> to list all virtual devices,  identify the virtual core pointer associated with tablet pen
+    ```
+    e.g.   ↳ 10moons-pen Pen (0)                     	id=17	[slave  pointer  (2)]
+    ```
+  7.3. configure xinput to restrict x&y coords to relevant monitor
+    ```
+    e.g.  xinput map-to-output 17 DisplayPort-1
+    ```
 
 
 **You need to connect your tablet and run the driver prior to launching a drawing software otherwise the device will not be recognized by it.**
