@@ -89,7 +89,7 @@ Configuration of the driver placed in `config-vin1060plus.yml` file.
 
 You may need to change the *vendor_id* and the *product_id* but I'm not sure (You device can have the same values as mine, but if it is not you can run the *lsusb* command to find yours).
 
-Buttons assigned from in the order from left to right. You can assign to them any button on the keyboard and their combinations separating them with a plus (+) sign.
+Buttons assigned from top left (button 1) to bottom right (button 12) in the order from left to right. You can assign to them any button on the keyboard and their combinations separating them with a plus (+) sign.
 
 If you find that using this driver with your tablet results in reverse axis or directions (or both), you can modify parameters *swap_axis*, *swap_direction_x*, and *swap_direction_y* by changing false to true and another way around.
 
