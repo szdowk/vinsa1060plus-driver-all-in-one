@@ -15,7 +15,7 @@ This is a Simple driver with pyUSB code modified to handle the interaction event
 
 Linux detects it as a T501 GoTOP tablet,  hence pyUSB library is able to interface with the tablet device.
 
-## About
+# About
 
 Driver which provides basic functionality for VINSA 1060plus T501 tablet:
 * 12 buttons on the tablet itself
@@ -32,12 +32,10 @@ Thanks to [Digimend - https://github.com/DIGImend](https://github.com/DIGImend) 
 
 Unfortuantely, Mr Digimend has chosen not to further develop the driver applicable to VINSA 1060plus, due to the inaccurate information transmitted between the T501 chipset and the USB driver --> [Live recording of Mr DIGIMEND working on 10moons tablet debug and analysis.  Awesome to see the master at work :)](https://www.youtube.com/watch?v=WmnSwjlpRBE).
 
-So an alternative workaround was needed.  In steps Alex-S-V with his pyUSB implementation of the T503 driver --- together with the [Digimend 10moons-Probe tool](https://github.com/DIGImend/10moons-tools),  it has the particular effect of switching the Graphics Tablet out of AndroidActiveArea Mode and into FullTabletArea mode.  I will need to ask the original author (Mr.Digimend) how he identified the hex string to transmit to the tablet [ (probe.c src: line#165 ---> SET_REPORT(0x0308, 0x08, 0x04, 0x1d, 0x01, 0xff, 0xff, 0x06, 0x2e); ) ] (https://github.com/DIGImend/10moons-tools/blob/6cc7c40c50cb58fefe4e732f6a94fac75c9e4859/10moons-probe.c#L165)
-
 The person to discover this "hack" was Mr.Digimend himself and thanks to the [Youtube video that he uploaded time-stamp @1:40.11](https://youtu.be/WmnSwjlpRBE?t=6011) he shows that usbhid-dump  output when in Android-Active-Area Mode (8 byte TX)  vs  the required  Full-Tablet-Active-Area mode ( 64 byte TX).
 
 
-## How to install
+# How to install
 1.  Clone this repository
 ```bash
 git clone https://github.com/extenebrisadlucem/vinsa1060plus-driver-all-in-one.git
@@ -51,7 +49,7 @@ sudo su
 python3 -m venv .venv
 # get modules from the net
 pip install -r requirements.txt
-# If you feel comfident with versions execute this :
+# If you feel confident with versions execute this :
 # pip install evdev pyusb PyYAML nuitka 
 ```
 From here, your driver is runable, but may be slow on some systems...
@@ -69,13 +67,10 @@ This command will build your executable, including the yaml inside as the defaul
 
 
 
-**You need to connect your tablet and run the driver prior to launching a drawing software otherwise the device will not be recognized by it.**
+>  :clipboard: **You need to connect your tablet and run the driver prior to launching a drawing software otherwise the device will not be recognized by it.**
 
 
-
-
-
-## Configuring tablet
+# Configuring tablet
 
 Configuration of the driver placed in `~/.config/config-vin1060plus/config-vin1060plus.yaml` file.
 
@@ -126,7 +121,7 @@ example output:
 
 
 
-## Credits
+# Credits
 
 > Some parts of code are taken from: 
   https://github.com/Mantaseus/Huion_Kamvas_Linux
@@ -148,27 +143,22 @@ The forum that got me started with finding a simple solution to my cheap graphic
 > "Please Add support for 10moons 10*6 inch Graphics Tablet #182" 
   https://github.com/DIGImend/digimend-kernel-drivers/issues/182
 
-## Known issues
+# Known issues
 
 * Pressure sensitivity is actually Z-axis height,  where digital 0 is approx 2mm below the graphical tablet surface and digital 8192 is approx 25mm above the graphical tablet. Useful "Pressure sensitivity" values show up in the range of digital 400 and digital 2048.  In `config-vin1060plus.yml` file,  the property  `pressure_contact_threshold` was chosen by trial and error.  Colder temperatures affect the "pressure sensitivity" range.
 
 * `DEBUG = True` , [flag variable exists](https://github.com/f-caro/10moons-driver-vin1060plus/blob/a9cb0839de7a56f56fe0facc96c7e4c2cf0e86de/driver-vin1060plus.py#L12) that helps debug the typical behaviour surrounding the driver interaction with T501 graphics compatible tablet.  To be honest, it's just print() statements alllll theee waaayyyy downnnn. :)
 
+* On stylus button sometimes keep sending «K» or «P», juste press «space» on tablette button.
 
 
-## TODOS
+# TODOS
 
 * Key Combinations dont work as expected. Need to debug that.  Keyboard HotKeys also dont work as expected.  Maybe try a different keyboard/mouse interaction python library --- ( pynPut ) https://nitratine.net/blog/post/simulate-keypresses-in-python/
-
-* Map the 10 "virtual buttons" found on the top-side of the graphics tablet active area.  `( mute, vol_dwn, vol_up, music_player, play_pause, prev_song, next_song, home_btn, calc_btn, desktop_view )`.  `home_btn, calc_btn, desktop_view` works after plugging in usb tablet, but before running the `./10moons-probe`  command.
 
 * Allow the Graphics App (e.g. Gimp, Scribus, Pix, Inkscape etc. ) to make use of the "pressure sensitivity" measurement. I think the issue lies with  `vpen.write(ecodes.EV_KEY, ecodes.BTN_TOUCH, 0)`  and  `ecodes.BTN_MOUSE` conflict.  `BTN_TOUCH` does not execute event, while  `BTN_MOUSE` does. ???
 
 * Use its linear Z-axis "pressure sensitivity" measurements and map it to a non-linear function (maybe bezzier-curve) that simulates more natural pen strokes. :)
-
-* Is there a way with [pyUSB transfer bytecode]() to the VINSA1060plus T501 microcontroller that can enable one to skip the `./10moons-probe` code execution ?!?!
-
-* Refactor `driver-vin1060plus.py`.  Yikes,  it looks like a N00b modified it. :)
 
 # Useful references
 
