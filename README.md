@@ -1,8 +1,11 @@
-# 10moons-driver-vin1060plus
+Vinsa 1060 plus - driver-all-in-one
+=====================================
+This is the all-in-one version from Delfosse Aurore([ON7AUR](https://www.qrz.com/db/ON7AUR))
 
+Forked from [f-caro](https://github.com/f-caro/10moons-driver-vin1060plus) (Thanks for your work,I wanted to add upper buttons and include work from Alex to have «everything-in-one» executable)...
 Forked from [Alex-S-V](https://github.com/alex-s-v/10moons-driver) ( thanks dude for the pyUSB and T503 case study) 
 
-![Aliexpress Graphics Tablet VINSA 1060plus](http://eng.10moons.com/upload/2018/06/11/201806112311552.jpg)
+![](resources/VINSA1060PLUS.jpeg)
 
 [10moons Graphics Tablet product homepage](http://eng.10moons.com/info5494.html)
 
@@ -16,6 +19,7 @@ Linux detects it as a T501 GoTOP tablet,  hence pyUSB library is able to interfa
 
 Driver which provides basic functionality for VINSA 1060plus T501 tablet:
 * 12 buttons on the tablet itself
+* 10 buttons on top
 * Correct X and Y positioning (two active area modes present:  Android Active Area & Full Tablet Active Area)
 * Pressure sensitivity ( able to read the values, but unable to pass it onto Graphics Software )
 
@@ -34,47 +38,35 @@ The person to discover this "hack" was Mr.Digimend himself and thanks to the [Yo
 
 
 ## How to install
-1. Clone or Download then install  [`10moons-tools`](https://github.com/DIGImend/10moons-tools)
-2. run  `lsusb` ... identify  BUS and DEVICE numbers that linux detects from Graphics Tablet
-    ```
-    e.g. Bus 001 Device 003: ID 08f2:6811 Gotop Information Inc. [T501] Driver Inside Tablet
-    ```
-3. run  `sudo 10moons-tools BUSnum DEVICEnumber`
-    ```
-    e.g. sudo 10moons-tools 1 3
-    ```
-4. Clone or download then install this repository.
-  
-   1. 
-    ```
-    git clone https://github.com/f-caro/10moons-driver-vin1060plus.git
-    ```
-  
-   2. Then install all dependencies listed in `_requirements.txt_` file either using python virtual environments or not.
-    ```
-    python3 -m pip install -r requirements.txt
-    ```
+1.  Clone this repository
+```bash
+git clone https://github.com/extenebrisadlucem/vinsa1060plus-driver-all-in-one.git
+```
+2.  Change Directory and create a virtual environment for python
+```bash
+cd vinsa1060plus-driver-all-in-one/
+# As it's a driver, you must be administrator
+sudo su
+# create virtual environment to avoid polluting your system with (old)modules
+python3 -m venv .venv
+# get modules from the net
+pip install -r requirements.txt
+# If you feel comfident with versions execute this :
+# pip install evdev pyusb PyYAML nuitka 
+```
+From here, your driver is runable, but may be slow on some systems...
+```bash
+# if you want to give a try
+python driver_vin1060plus.py
+```
+3.  Create a converted/compiled system level application
+In order to increase speed, convert your python in C and build it as a system application.
+(you can do it with your favorite applications like cython, pyinstaller,Pyoxidizer,nuitka …). I choosed **nuitka**, it's kind of slow to build your system executable, but it's all included.
+```bash
+nuitka --standalone --onefile --include-module=evdev --include-data-file=config-vin1060plus.yaml=./config-vin1060plus.yaml driver-vin1060plus.py
+```
+This command will build your executable, including the yaml inside as the default config file. ==Your custom config file will be in your ~/.config/config-vin1060plus/config-vin1060plus.yaml==
 
-5. run python driver ---  `sudo python3 driver-vin1060plus.py`
-
-6. remember to `TAP` the graphics tablet with the passive pen, so that linux `xinput` can list it as a virtual pointing device (a quirk maybe associated with vin1060plus ?!)
-
-7.  In case of multiple monitors connected.
-  
-    1. run `xrandr` --->  to identify the name of the Display that you want to limit your tablet x & y coords.
-    ```
-    e.g.  DisplayPort-1
-    ```
-  
-    2. run `xinput`  ---> to list all virtual devices,  identify the virtual core pointer associated with tablet pen
-    ```
-    e.g.   ↳ 10moons-pen Pen (0)                     	id=17	[slave  pointer  (2)]
-    ```
-  
-    3. configure xinput to restrict x&y coords to relevant monitor
-    ```
-    e.g.  xinput map-to-output 17 DisplayPort-1
-    ```
 
 
 **You need to connect your tablet and run the driver prior to launching a drawing software otherwise the device will not be recognized by it.**
@@ -85,7 +77,7 @@ The person to discover this "hack" was Mr.Digimend himself and thanks to the [Yo
 
 ## Configuring tablet
 
-Configuration of the driver placed in `config-vin1060plus.yml` file.
+Configuration of the driver placed in `~/.config/config-vin1060plus/config-vin1060plus.yaml` file.
 
 You may need to change the *vendor_id* and the *product_id* but I'm not sure (You device can have the same values as mine, but if it is not you can run the *lsusb* command to find yours).
 
@@ -132,9 +124,7 @@ example output:
 > Input-Event-codes Src from Github : 
   https://github.com/torvalds/linux/blob/master/include/uapi/linux/input-event-codes.h
 
-## Changing Virtual Button shortcuts
 
-TODO --->
 
 ## Credits
 
@@ -190,4 +180,5 @@ The forum that got me started with finding a simple solution to my cheap graphic
 * 10moons 10x6 tablet homepage : http://eng.10moons.com/info5494.html  :::  picture revealing possible circuit schematic ??  http://eng.10moons.com/info5494.html
 * libUSB C library initialization/deinitialization : https://libusb.sourceforge.io/api-1.0/group__libusb__lib.html#details
 * USB in a Nutshell - tutorial/howtos/references : https://www.beyondlogic.org/usbnutshell/usb1.shtml
-* 
+
+

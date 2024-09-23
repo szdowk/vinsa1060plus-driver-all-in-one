@@ -13,8 +13,11 @@ actions:
     pen_touch: BTN_LEFT #BTN_TOUCH
     pen: BTN_TOOL_PEN
     pen_buttons:
+    # https://sites.uclouvain.be/SystInfo/usr/include/linux/input.h.html
+    # https://github.com/torvalds/linux/blob/master/include/uapi/linux/input-event-codes.h
     #for Buttons :: python -c "from evdev import ecodes; print([x for x in dir(ecodes) if 'BTN_' in x])"
         - BTN_STYLUS                    #1st button closest to tip
+        #- BTN_RIGHT                     # 1st Btn for right click -> We can't do this https://www.kernel.org/doc/html/v4.14/input/event-codes.html (didn't find why)
         - BTN_STYLUS2                   #2nd button
     tablet_buttons: 
     #for Keys :: python -c "from evdev import ecodes; print([x for x in dir(ecodes) if 'KEY_' in x])"
@@ -30,6 +33,17 @@ actions:
         - KEY_SPACE                     #labelled 'SPACE'
         - KEY_LEFTCTRL                  #labelled 'CTRL'
         - KEY_LEFTALT                   #labelled 'ALT'
+
+        - KEY_MUTE                      #up mute
+        - KEY_VOLUMEDOWN                #up vol-
+        - KEY_VOLUMEUP                  #up vol+
+        - KEY_SOUND                     #up note
+        - KEY_PLAYPAUSE                 #up play/pause
+        - KEY_PREVIOUSSONG              #up back
+        - KEY_NEXTSONG                  #up next
+        - KEY_WWW                       #up Home
+        - KEY_CALC                      #up calc
+        - KEY_BUTTONCONFIG              #up desktop
 settings:
     swap_axis: false
     swap_direction_x: false

@@ -1,3 +1,6 @@
-evdev==1.2.0
-pyusb==1.0.2
-PyYAML==5.4
+evdev==1.7.1
+Nuitka==2.4.8
+ordered-set==4.1.0
+pyusb==1.2.1
+PyYAML==6.0.2
+zstandard==0.23.0

@@ -1,2 +1,6 @@
-env
+.venv
 .vscode
+driver-vin1060plus.bin
+driver-vin1060plus.build
+driver-vin1060plus.dist
+driver-vin1060plus.onefile-build
