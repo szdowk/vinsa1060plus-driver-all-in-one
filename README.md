@@ -63,8 +63,15 @@ In order to increase speed, convert your python in C and build it as a system ap
 ```bash
 nuitka --standalone --onefile --include-module=evdev --include-data-file=config-vin1060plus.yaml=./config-vin1060plus.yaml driver-vin1060plus.py
 ```
-This command will build your executable, including the yaml inside as the default config file. ==Your custom config file will be in your ~/.config/config-vin1060plus/config-vin1060plus.yaml==
+This command will build your executable, including the yaml inside as the default config file. Your custom config file will be in your ~/.config/config-vin1060plus/config-vin1060plus.yaml
 
+4.  Execute it
+You can choose to execute it only in python and avoid step 3, but in another case you'll have to do :
+```bash
+sudo su 
+nohup ./driver-vin1060plus.bin &
+exit
+```
 
 
 >  :clipboard: **You need to connect your tablet and run the driver prior to launching a drawing software otherwise the device will not be recognized by it.**

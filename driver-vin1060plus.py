@@ -96,13 +96,6 @@ if __name__ == "__main__":
         # copy file 
         shutil.copy("./config-vin1060plus.yaml", os.path.join(os.path.expanduser('~'), ".config/config-vin1060plus/config-vin1060plus.yaml" ))
 
-    # if len(sys.argv) != 3:
-    #     print("Invalid number of arguments")
-    #     usage()
-    #     sys.exit(1)
-    #bus_num = int(sys.argv[1])
-    #dev_addr = int(sys.argv[2])
-
     # Open yaml file from :
     path = os.path.join(os.path.expanduser('~'), ".config/config-vin1060plus/config-vin1060plus.yaml")
     # if we compile the solution with Nuitka - user should be able to map his own keys via this file
@@ -113,7 +106,6 @@ if __name__ == "__main__":
 
     # tabus=$(lsusb|grep 08f2:6811|gawk '{print $2;print $4}'|tr '\n' ' '|tr ':' ' ')
     # -> adress is in the yaml
-    # une fois fait ne pas oublier de virer la validation des params d'arguments d'app.
     tabus=usb.core.find(idVendor=config["vendor_id"], idProduct=config["product_id"])
     if tabus==None :
         print("Vinsa 1060Plus not found - check if vendor:product correspond from «lsusb» and in the config File")
@@ -121,7 +113,6 @@ if __name__ == "__main__":
         exit(-1)
 
     probe(tabus.bus, tabus.address)
-    #sys.exit(probe(bus_num, dev_addr))
     # HERE : Full area open
     # ######################################################################################################
 
@@ -322,7 +313,8 @@ if __name__ == "__main__":
             
             if pressed_prev is not None:
                 if(DEBUG) : 
-                    print("Key_pressed detected : ", pressed_prev , " :: ", config["actions"]["tablet_buttons"][pressed_prev] , " -- press type ( 0-up, 1-down , 2-hold) :", press_type )
+                    print("Key_pressed detected : ", pressed_prev , " :: ", config["actions"]["tablet_buttons"][pressed_prev] , 
+                          " -- press type ( 0-up, 1-down , 2-hold) :", press_type )
                 key_codes = config["actions"]["tablet_buttons"][pressed_prev].split("+")
                 for key in key_codes:
                     act = ecodes.ecodes[key]
