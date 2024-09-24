@@ -1,3 +1,4 @@
+<meta name="google-site-verification" content="GTdRjLssPUj3_gDeLmqs3jN1I4IQPgLGoCoegPG-E9U" />
 Vinsa 1060 plus - driver-all-in-one
 =====================================
 This is the all-in-one version from Delfosse Aurore([ON7AUR](https://www.qrz.com/db/ON7AUR))
