@@ -16,9 +16,10 @@ actions:
     # https://sites.uclouvain.be/SystInfo/usr/include/linux/input.h.html
     # https://github.com/torvalds/linux/blob/master/include/uapi/linux/input-event-codes.h
     #for Buttons :: python -c "from evdev import ecodes; print([x for x in dir(ecodes) if 'BTN_' in x])"
-        - BTN_STYLUS                    #1st button closest to tip
-        #- BTN_RIGHT                     # 1st Btn for right click -> We can't do this https://www.kernel.org/doc/html/v4.14/input/event-codes.html (didn't find why)
-        - BTN_STYLUS2                   #2nd button
+        #- BTN_STYLUS                  #1st button closest to tip
+        - BTN_MIDDLE                  #1st button as middle mouse button
+        #- BTN_STYLUS2                 #2nd button as stylus2
+        - BTN_RIGHT                   #2nd button as right mouse button
     tablet_buttons: 
     #for Keys :: python -c "from evdev import ecodes; print([x for x in dir(ecodes) if 'KEY_' in x])"
         - KEY_E                         #labelled 'E'
