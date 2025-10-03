@@ -6,6 +6,8 @@
 # I 've added the management of buttons on top of the tablet. 
 # PS: I wanted to use my stylus as a mouse, but apparently we must not map rightclick'mouse (don't know why)
 # 21/09/2024 - Delfosse Aurore (ON7AUR) - V0.1 - first release
+#
+# 30/06/2025 - Debugging of pen buttons support and some optimalizations (key map) by szdowk
 # 
 # ##########################################################################################################
 # Troubleshoot : On stylus btn sometimes keep sending «K» or «P», juste press «space» on tablette btn.
@@ -205,6 +207,23 @@ if __name__ == "__main__":
     #Unfortunately vin1060plus does not show 8192 pressure resolution.  #TODO: need to review pressure parameters
 
     pressed_prev = None
+    pen_pressed_prev = None
+
+    button_map = {
+        (255, 49):  0,   # key E
+        (255, 35):  1,   # key B
+        (127, 51):  2,   # CTRL-
+        (255, 50):  3,   # CTRL+
+        (191, 51):  4,   # [
+        (255, 19):  5,   # ]
+        (223, 51):  6,   # scroll up
+        (254, 51):  7,   # TAB
+        (239, 51):  8,   # scroll down
+        (253, 51):  9,   # SPACE
+        (247, 51): 10,   # CTRL
+        (251, 51): 11,   # ALT
+    }
+
     # ######################################################################################################
     # Infinite loop
     # ######################################################################################################
@@ -253,7 +272,7 @@ if __name__ == "__main__":
                             pressed_prev=18
                         if pen_x==3052 :
                             if(DEBUG) : print("home")
-                            pressed_prev=18
+                            pressed_prev=19
                         if pen_x==3459 :
                             if(DEBUG) : print("calc")
                             pressed_prev=20
@@ -275,32 +294,8 @@ if __name__ == "__main__":
             # Side Buttons
             key_pressed = ( data[11] , data[12] )
             if(DEBUG) : print("--- key_pressed : " , key_pressed )
-            #pressed = None  # moved to the begining of the code for buttons on top of the tablet
 
-            if key_pressed == (255,49): # 1st button (from top left - labelled "E")
-                pressed = 0
-            if key_pressed == (255,35): # 2nd button (labelled "B")
-                pressed = 1
-            if key_pressed == (127,51): # 3rd button (labelled "CTRL-")
-                pressed = 2
-            if key_pressed == (255,50): # 4th button (labelled "CTRL+")
-                pressed = 3
-            if key_pressed == (191,51): # 5th button (labelled "[") 
-                pressed = 4
-            if key_pressed == (255,19): # 6th button (labelled "]") 
-                pressed = 5
-            if key_pressed == (223,51): # 7th button (labelled "MouseSymbol_arrowUP")
-                pressed = 6
-            if key_pressed == (254,51): # 8th button (labelled "TAB")
-                pressed = 7
-            if key_pressed == (239,51): # 9th button (labelled "MouseSymbol_arrowDown")
-                pressed = 8
-            if key_pressed == (253,51): # 10th button (labelled "SPACE")
-                pressed = 9
-            if key_pressed == (247,51): # 11th button (labelled "CTRL")
-                pressed = 10
-            if key_pressed == (251,51): # 12th button (labelled "ALT")
-                pressed = 11
+            pressed = button_map.get(key_pressed, None)
                                                                                                                 
             # press types: 0 - up; 1 - down; 2 - hold
             #press_type = 0 #moved begin loop for upper buttons
@@ -312,8 +307,8 @@ if __name__ == "__main__":
                 pressed_prev = pressed
             
             if pressed_prev is not None:
-                if(DEBUG) : 
-                    print("Key_pressed detected : ", pressed_prev , " :: ", config["actions"]["tablet_buttons"][pressed_prev] , 
+                if(DEBUG) :
+                    print("Key_pressed detected : ", pressed_prev , " :: ", config["actions"]["tablet_buttons"][pressed_prev] ,
                           " -- press type ( 0-up, 1-down , 2-hold) :", press_type )
                 key_codes = config["actions"]["tablet_buttons"][pressed_prev].split("+")
                 for key in key_codes:
@@ -322,25 +317,34 @@ if __name__ == "__main__":
 
             # ##############################################################################################
             # BTN_STYLUS & BTN_STYLUS2
-            pen_button = data[9] 
-            if(DEBUG) : print("--- pen_button_pressed : " , pen_button )
-            pen_button_pressed = None
-            if pen_button == 4: # lower pen button (one closer to pen tip)
-                pen_button_pressed = 0
-            if pen_button == 6: # upper pen button (one further from pen tip)
-                pen_button_pressed = 1
+            val = data[9]
+            # check which button was pressed (0=lower, 1=upper) or None
+            if   val == 4:  curr = 0
+            elif val == 6:  curr = 1
+            else:           curr = None
 
-            # press types: 0 - up; 1 - down; 2 - hold
-            press_type = 0
-            if pen_button != 2 : # Default value when no pen button pressed 
-                press_type = 1   # press_type=2 (hold status) is not working nicely, so skip implementation
+            # Event type: down (1) / up (0) / brak (None)
+            if pen_pressed_prev is None and curr is not None:
+                press_type = 1   # just pressed
+                btn = curr
+            elif pen_pressed_prev is not None and curr is None:
+                press_type = 0   # just released
+                btn = pen_pressed_prev
+            else:
+                press_type = None
+                btn = None
 
-            if pen_button != 2 : #
-                if(DEBUG) : print("pen_button_pressed detected : ", pen_button_pressed , " :: ", config["actions"]["pen_buttons"][pen_button_pressed], " -- press type ( 0-up, 1-down , 2-hold) :", press_type )
-                key_codes = config["actions"]["tablet_buttons"][pen_button_pressed].split("+")
-                for key in key_codes:
-                    act = ecodes.ecodes[key]
-                    vbtn.write(ecodes.EV_KEY, act, press_type)
+            # If  event down or  up, send it to vpen
+            if btn is not None and press_type is not None:
+                codes = config["actions"]["pen_buttons"][btn].split("+")
+                for key in codes:
+                    code = ecodes.ecodes[key]
+                    vpen.write(ecodes.EV_KEY, code, press_type)
+                vpen.syn()
+
+            # remember button state
+            pen_pressed_prev = curr
+
 
             # Flush
             vpen.syn()
