@@ -4,7 +4,10 @@ Vinsa 1060 plus - driver-all-in-one
 =====================================
 This is the all-in-one version from Delfosse Aurore([ON7AUR](https://www.qrz.com/db/ON7AUR))
 
+Forked from [extenebrisadlucem](https://github.com/extenebrisadlucem/vinsa1060plus-driver-all-in-one) (Thanks for your work,I debugged upper buttons)...
+
 Forked from [f-caro](https://github.com/f-caro/10moons-driver-vin1060plus) (Thanks for your work,I wanted to add upper buttons and include work from Alex to have «everything-in-one» executable)...
+
 Forked from [Alex-S-V](https://github.com/alex-s-v/10moons-driver) ( thanks dude for the pyUSB and T503 case study) 
 
 ![](resources/VINSA1060PLUS.jpeg)
@@ -157,8 +160,6 @@ The forum that got me started with finding a simple solution to my cheap graphic
 * Pressure sensitivity is actually Z-axis height,  where digital 0 is approx 2mm below the graphical tablet surface and digital 8192 is approx 25mm above the graphical tablet. Useful "Pressure sensitivity" values show up in the range of digital 400 and digital 2048.  In `config-vin1060plus.yml` file,  the property  `pressure_contact_threshold` was chosen by trial and error.  Colder temperatures affect the "pressure sensitivity" range.
 
 * `DEBUG = True` , [flag variable exists](https://github.com/f-caro/10moons-driver-vin1060plus/blob/a9cb0839de7a56f56fe0facc96c7e4c2cf0e86de/driver-vin1060plus.py#L12) that helps debug the typical behaviour surrounding the driver interaction with T501 graphics compatible tablet.  To be honest, it's just print() statements alllll theee waaayyyy downnnn. :)
-
-* On stylus button sometimes keep sending «K» or «P», juste press «space» on tablette button.
 
 
 # TODOS
