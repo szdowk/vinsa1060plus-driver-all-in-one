@@ -1,33 +1,38 @@
 # ##########################################################################################################
-# Driver for tablette VINSA 1060 plus based on «f-caro» (https://github.com/f-caro), and inspired by  
+# Driver for tablette VINSA 1060 plus based on «f-caro» (https://github.com/f-caro), and inspired by
 # Alexandr Vasilyev - «alex-s-v» (https://github.com/alex-s-v)
-# 
-# I've put everything inside this script (reclaim interface) - open full area - source of Alexandr and 
-# I 've added the management of buttons on top of the tablet. 
-# PS: I wanted to use my stylus as a mouse, but apparently we must not map rightclick'mouse (don't know why)
-# 21/09/2024 - Delfosse Aurore (ON7AUR) - V0.1 - first release
 #
+# I've put everything inside this script (reclaim interface) - open full area - source of Alexandr and
+# I 've added the management of buttons on top of the tablet. 
+# 21/09/2024 - Delfosse Aurore (ON7AUR) - V0.1 - first release
 # 30/06/2025 - Debugging of pen buttons support and some optimalizations (key map) by szdowk
-# 
-# ##########################################################################################################
-# Troubleshoot : On stylus btn sometimes keep sending «K» or «P», juste press «space» on tablette btn.
+# 18/10/2025 - Debugging of "Resource busy" error, slip/hibernate support and usb errors handle by szdowk
+#
 # ##########################################################################################################
 
 import os
 import sys
 import shutil
+import time
 # Specification of the device https://python-evdev.readthedocs.io/en/latest/
 from evdev import UInput, ecodes, AbsInfo
 # Establish usb communication with device
 import usb
 import usb.core
 import usb.util
+# Read configuration
 import yaml
 
 # ##########################################################################################################
 # Global variables
 # ##########################################################################################################
-DEBUG = False	# = True --> Useful when inspecting tablet behaviour and pen interactions
+DEBUG = False	# Default mode, try "--debug" line option for debug mode.
+
+# ##########################################################################################################
+# Options
+# ##########################################################################################################
+for arg in sys.argv[1:]:
+    if arg == "--debug": DEBUG = True
 
 # ##########################################################################################################
 # Functions
@@ -38,24 +43,6 @@ def probe(bus_num, dev_addr):
     
     if dev is None:
         print("Device not found")
-        return 1
-
-    # Détache le driver kernel s'il est actif
-    try:
-        if dev.is_kernel_driver_active(2):
-            dev.detach_kernel_driver(2)
-            print("Kernel driver detached")
-    except usb.core.USBError as e:
-        print(f"Error detaching kernel driver: {e}")
-        return 1
-
-    # Réclamer l'interface - vu que le nouveau kernel automatiquement lance son driver minimal pensant que c'est ANDROID... 
-    try:
-        dev.set_configuration()
-        usb.util.claim_interface(dev, 2)
-        print("Interface claimed successfully")
-    except usb.core.USBError as e:
-        print(f"Error claiming interface: {e}")
         return 1
 
     # Exemple de transmission de rapports
@@ -83,6 +70,63 @@ def probe(bus_num, dev_addr):
     # Libération de l'interface
     usb.util.release_interface(dev, 2)
     return 0
+
+def run_probe_on_iface2(dev):
+    """Zakłada, że iface 2 jest już zclaimowany; wysyła sekwencję raportów 'full area'."""
+    def set_report(wValue, report):
+        dev.ctrl_transfer(0x21, 9, wValue, 2, report, 250)
+        time.sleep(0.01)
+    set_report(0x0308, [0x08, 0x04, 0x1d, 0x01, 0xff, 0xff, 0x06, 0x2e])
+    set_report(0x0308, [0x08, 0x03, 0x00, 0xff, 0xf0, 0x00, 0xff, 0xf0])
+    set_report(0x0308, [0x08, 0x06, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00])
+    set_report(0x0308, [0x08, 0x03, 0x00, 0xff, 0xf0, 0x00, 0xff, 0xf0])
+
+def setup_device_for_full_area(dev):
+    # 0) Try to unload kernel drivers (nothing will happen if already unloaded)
+    for i in (0, 1, 2):
+        try:
+            if dev.is_kernel_driver_active(i):
+                dev.detach_kernel_driver(i)
+        except Exception:
+            pass
+
+    # Reset
+    try:
+        dev.reset()
+    except usb.core.USBError:
+        # after resume some controlers do reset – lets ignore
+        pass
+
+    # set_configuration with  retry i EBUSY (16) support
+    for _ in range(3):
+        try:
+            dev.set_configuration()
+            break
+        except usb.core.USBError as e:
+            err = getattr(e, "errno", None) or (e.args[0] if e.args else None)
+            if err == 16:  # Resource busy
+                # Lets try again and additional detach
+                for i in (0, 1, 2):
+                    try:
+                        if dev.is_kernel_driver_active(i):
+                            dev.detach_kernel_driver(i)
+                    except Exception:
+                        pass
+                time.sleep(0.05)
+                continue
+            else:
+                raise
+
+    # full-area: claim iface 2, reports, release 2
+    usb.util.claim_interface(dev, 2)
+    run_probe_on_iface2(dev)
+    usb.util.release_interface(dev, 2)
+
+    # read from iface 1
+    usb.util.claim_interface(dev, 1)
+    ep = dev[0].interfaces()[1].endpoints()[0]
+    return ep
+
 
 # ##########################################################################################################
 # Main #####################################################################################################
@@ -167,17 +211,10 @@ if __name__ == "__main__":
     # Interface[2] maps to the 'AndroidActive Area' --- outputs 8 bytes of xinput events ( but only before  ./10moons-probe is executed)
     if(DEBUG) : print(dev)
     if(DEBUG) : print("--------------------------------")
-    ep = dev[0].interfaces()[1].endpoints()[0]
-    # Reset the device (don't know why, but till it works don't touch it)
-    dev.reset()  
+    if(DEBUG) : print("---Drop default kernel driver from all devices")
 
-    # Drop default kernel driver from all devices
-    for j in [0, 1, 2]:
-        if dev.is_kernel_driver_active(j):
-            dev.detach_kernel_driver(j)
-
-    # Set new configuration
-    dev.set_configuration()
+    if(DEBUG): print("--- setup_device_for_full_area(dev)")
+    ep = setup_device_for_full_area(dev)
 
     vpen = UInput(events=pen_events, name=config["xinput_name"], version=0x3)
     if(DEBUG) : print(vpen.capabilities(verbose=True).keys() )
@@ -227,18 +264,76 @@ if __name__ == "__main__":
     # ######################################################################################################
     # Infinite loop
     # ######################################################################################################
+
+    short_streak = 0
+    idle_timeouts = 0
+
     while True:
         try:
-            data = dev.read(ep.bEndpointAddress, ep.wMaxPacketSize)
+            # 1) Read with timeout (1 s)
+            try:
+                data = dev.read(ep.bEndpointAddress, ep.wMaxPacketSize, timeout=1000)
+                idle_timeouts = 0  # if recaived data
+            except usb.core.USBTimeoutError:
+                # In some situations except USBTimeoutError there is USBError 110;
+                # it will be cached below, so there just re-raise:
+                raise
+            except usb.core.USBError as e:
+                # If time passed, the tablet is inactive
+                err = getattr(e, "errno", None)
+                if err is None and e.args:
+                    err = e.args[0]
+                if err == 110:  # Operation timed out
+                    idle_timeouts += 1
+                    delay = min(0.05, 0.001 * idle_timeouts)  # 50ms max
+                    if DEBUG and idle_timeouts % 60 == 0:
+                        print(f"[USB] idle timeout x{idle_timeouts} (delay={delay:.3f}s)")
+                    time.sleep(delay)
+                    # Lets „refresh” interface after long silence:
+                    if idle_timeouts >= 600:  # ~10 minutes of silence
+                        if DEBUG: print("[USB] long idle – soft re-claim iface 1")
+                        try: usb.util.release_interface(dev, 1)
+                        except Exception: pass
+                        try: usb.util.claim_interface(dev, 1)
+                        except usb.core.USBError: pass
+                        ep = dev[0].interfaces()[1].endpoints()[0]
+                        idle_timeouts = 0
+                    continue
+                else:
+                    # Other errors, below
+                    raise
+    
+            # ######################################################################
+            # THERE IS NEW DATA
+            # ######################################################################
+            n = len(data)
+            if(DEBUG) : print(f"pkt len={n} -> {list(data)}")
             if(DEBUG) : print(data) # shows button pressed array
             pressed = None 
+
+            if n < 7:
+                short_streak += 1
+                if short_streak >= 5:
+                    if DEBUG: print("Too many short frames; reinit interface 1")
+                    try:
+                        usb.util.release_interface(dev, 1)
+                    except Exception:
+                        pass
+                    dev.reset()
+                    dev.set_configuration()
+                    usb.util.claim_interface(dev, 1)
+                    ep = dev[0].interfaces()[1].endpoints()[0]
+                    short_streak = 0
+                continue
+            else:
+                short_streak = 0
 
             # press types: 0 - up; 1 - down; 2 - hold
             press_type = 0
 
             # ##############################################################################################
             # Position & pressure_contact
-            if data[5] in [3,4,5,6]: #[192, 193]: # Pen actions
+            if n >= 7 and data[5] in [3,4,5,6]: #[192, 193]: # Pen actions
                 pen_x = abs(max_x - (data[x1] * 255 + data[x2]))
                 pen_y = abs(max_y - (data[y1] * 255 + data[y2]))
                 pen_pressure = pressure_max - ( data[5] * 255 + data[6])
@@ -292,7 +387,10 @@ if __name__ == "__main__":
 
             # ##############################################################################################
             # Side Buttons
-            key_pressed = ( data[11] , data[12] )
+            if n >= 13:
+                key_pressed = (data[11], data[12])
+            else:
+                key_pressed = (255, 51)  # „brak klawisza”
             if(DEBUG) : print("--- key_pressed : " , key_pressed )
 
             pressed = button_map.get(key_pressed, None)
@@ -317,11 +415,12 @@ if __name__ == "__main__":
 
             # ##############################################################################################
             # BTN_STYLUS & BTN_STYLUS2
-            val = data[9]
-            # check which button was pressed (0=lower, 1=upper) or None
-            if   val == 4:  curr = 0
-            elif val == 6:  curr = 1
-            else:           curr = None
+            if n >= 10:
+                val = data[9]
+                # check which button was pressed (0=lower, 1=upper) or None
+                if   val == 4:  curr = 0
+                elif val == 6:  curr = 1
+                else:           curr = None
 
             # Event type: down (1) / up (0) / brak (None)
             if pen_pressed_prev is None and curr is not None:
@@ -353,19 +452,68 @@ if __name__ == "__main__":
             # reset pen button
             #pen_button=0x02
 
+            # ---------------------------------------------------------------
+    
+        except usb.core.USBTimeoutError:
+            # Second case of timeout (USBTimeoutError in my version of PyUSB)
+            idle_timeouts += 1
+            delay = min(0.05, 0.001 * idle_timeouts)
+            if DEBUG and idle_timeouts % 60 == 0:
+                print(f"[USB] idle timeout x{idle_timeouts} (delay={delay:.3f}s)")
+            time.sleep(delay)
+            if idle_timeouts >= 600:
+                if DEBUG: print("[USB] long idle – soft re-claim iface 1")
+                try: usb.util.release_interface(dev, 1)
+                except Exception: pass
+                try: usb.util.claim_interface(dev, 1)
+                except usb.core.USBError: pass
+                ep = dev[0].interfaces()[1].endpoints()[0]
+                idle_timeouts = 0
+            continue
+    
         except usb.core.USBError as e:
-            if e.args[0] == 19:
-                vpen.close()
-                raise Exception("Device has been disconnected")
+            # Critical USB errors (ie. 19 after sleep/hibernation – no device)
+            err = getattr(e, "errno", None)
+            if err is None and e.args:
+                err = e.args[0]
+            if err == 19:
+                if DEBUG: print("[USB] Device gone (Errno 19). Reconnecting…")
+                try: usb.util.release_interface(dev, 1)
+                except Exception: pass
+                try: usb.util.dispose_resources(dev)
+                except Exception: pass
+                # lets wait while device will return
+                new_dev = None
+                for _ in range(150):  # ok. 15 s
+                    time.sleep(0.1)
+                    new_dev = usb.core.find(idVendor=config["vendor_id"], idProduct=config["product_id"])
+                    if new_dev is not None:
+                        break
+                if new_dev is None:
+                    if DEBUG: print("[USB] Not found again – exiting.")
+                    try: vpen.close()
+                    except Exception: pass
+                    try: vbtn.close()
+                    except Exception: pass
+                    raise Exception("Device has been disconnected and not found again")
+                # full init (setup_device_for_full_area)
+                dev = new_dev
+                time.sleep(0.1)  # a little wait after re-numeration
+                ep = setup_device_for_full_area(dev)
+                idle_timeouts = 0
+                continue
+            else:
+                # Other errors
+                if DEBUG: print(f"[USB] Unexpected USBError: {e!r}")
+                raise
+    
         except KeyboardInterrupt:
             vpen.close()
             vbtn.close()
             sys.exit("\nDriver terminated successfully.")
+    
         except Exception as e:
-            print(e)
-
-
-
-
-
-
+            # Other error messages – lets log and try again
+            if DEBUG: print("[MAIN] Unexpected exception:", e)
+            time.sleep(0.05)
+            continue
