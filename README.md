@@ -28,7 +28,7 @@ Driver which provides basic functionality for VINSA 1060plus T501 tablet:
 * 10 buttons on top
 * Correct X and Y positioning (two active area modes present:  Android Active Area & Full Tablet Active Area)
 * Pressure sensitivity ( able to read the values, but unable to pass it onto Graphics Software (? at least works with some) )
-* Anyway, it is not true driver. It is a console application that should be starteed after X from console or in .xinitrc ( /path_to_driver/driver-vin1060plus.bin & ). It can be started foreground (support option --debug ) or with background with &.
+* Anyway, it is not true driver. It is a console application that should be starteed after X from console ( /path_to_driver/driver-vin1060plus.bin & ). It can be started foreground (it support option --debug ) or in background with &.
 
 Tablet has 4096 levels in both axes and 2047 levels of pressure ( Product description says 8092, but actual output readings are 2047 max).
 
