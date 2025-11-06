@@ -6,7 +6,7 @@
 # I 've added the management of buttons on top of the tablet. 
 # 21/09/2024 - Delfosse Aurore (ON7AUR) - V0.1 - first release
 # 30/06/2025 - Debugging of pen buttons support and some optimalizations (key map) by szdowk
-# 18/10/2025 - Debugging of "Resource busy" error, slip/hibernate support and usb errors handle by szdowk
+# 18/10/2025 - Debugging of "Resource busy" error, sleep/hibernate support and usb errors handle by szdowk
 #
 # ##########################################################################################################
 
