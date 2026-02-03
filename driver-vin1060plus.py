@@ -5,8 +5,9 @@
 # I've put everything inside this script (reclaim interface) - open full area - source of Alexandr and
 # I 've added the management of buttons on top of the tablet. 
 # 21/09/2024 - Delfosse Aurore (ON7AUR) - V0.1 - first release
-# 30/06/2025 - Debugging of pen buttons support and some optimalizations (key map) by szdowk
-# 18/10/2025 - Debugging of "Resource busy" error, sleep/hibernate support and usb errors handle by szdowk
+# 30/06/2025 - Debugging ond fix for pen buttons support and some optimalizations (key map) by szdowk
+# 18/10/2025 - Debugging of "Resource busy" error, slip/hibernate support and usb errors handle by szdowk
+# 15/01/2026 - Still more USB communication hardening by szdowk
 #
 # ##########################################################################################################
 
@@ -27,6 +28,9 @@ import yaml
 # Global variables
 # ##########################################################################################################
 DEBUG = False	# Default mode, try "--debug" line option for debug mode.
+RESET_COOLDOWN_S = 10.0     # nie rób pełnego setup częściej niż co 20 s
+SHORT_STREAK_SOFT = 5       # po tylu krótkich ramach: soft re-claim iface 1
+SHORT_STREAK_HARD = 30      # po tylu: pełny setup (probe/full area)
 
 # ##########################################################################################################
 # Options
@@ -267,7 +271,9 @@ if __name__ == "__main__":
 
     short_streak = 0
     idle_timeouts = 0
-
+    last_hard_reset = 0.0
+    short_streak = 0
+    last_hard_reset = 0.0
     while True:
         try:
             # 1) Read with timeout (1 s)
@@ -311,19 +317,53 @@ if __name__ == "__main__":
             if(DEBUG) : print(data) # shows button pressed array
             pressed = None 
 
+#            if n < 7:
+#                short_streak += 1
+#                if short_streak >= 5:
+#                    if DEBUG: print("Too many short frames; reinit interface 1")
+#                    try:
+#                        usb.util.release_interface(dev, 1)
+#                    except Exception:
+#                        pass
+#                    dev.reset()
+#                    dev.set_configuration()
+#                    usb.util.claim_interface(dev, 1)
+#                    ep = dev[0].interfaces()[1].endpoints()[0]
+#                    short_streak = 0
+#                continue
+#            else:
+#                short_streak = 0
             if n < 7:
                 short_streak += 1
-                if short_streak >= 5:
-                    if DEBUG: print("Too many short frames; reinit interface 1")
+
+                # 1) first soft re-claim iface 1 (without device reset)
+                if short_streak == SHORT_STREAK_SOFT:
+                    if DEBUG: print("[USB] short frames -> soft re-claim iface 1")
                     try:
                         usb.util.release_interface(dev, 1)
                     except Exception:
                         pass
-                    dev.reset()
-                    dev.set_configuration()
-                    usb.util.claim_interface(dev, 1)
-                    ep = dev[0].interfaces()[1].endpoints()[0]
-                    short_streak = 0
+                    time.sleep(0.05)
+                    try:
+                        usb.util.claim_interface(dev, 1)
+                        ep = dev[0].interfaces()[1].endpoints()[0]
+                    except usb.core.USBError as e:
+                        if DEBUG: print("[USB] soft re-claim failed:", repr(e))
+
+                # 2) if short frames continue -> full setup, with cooldown
+                if short_streak >= SHORT_STREAK_HARD:
+                    now = time.monotonic()
+                    if now - last_hard_reset >= RESET_COOLDOWN_S:
+                        if DEBUG: print("[USB] persistent short frames -> full reinit (full area)")
+                        try:
+                            ep = setup_device_for_full_area(dev)
+                            last_hard_reset = now
+                            short_streak = 0
+                        except usb.core.USBError as e:
+                            if DEBUG: print("[USB] full reinit failed:", repr(e))
+                            # but not loop too agressive
+                            last_hard_reset = now
+                    # even if cooldown blocked, we still do not parse short frame
                 continue
             else:
                 short_streak = 0
@@ -517,3 +557,4 @@ if __name__ == "__main__":
             if DEBUG: print("[MAIN] Unexpected exception:", e)
             time.sleep(0.05)
             continue
+
