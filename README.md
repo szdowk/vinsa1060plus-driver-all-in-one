@@ -1,6 +1,6 @@
 <meta name="google-site-verification" content="GTdRjLssPUj3_gDeLmqs3jN1I4IQPgLGoCoegPG-E9U" />
 
-Vinsa 1060 plus - driver-all-in-one (18/10/2025)
+Vinsa 1060 plus - driver-all-in-one (3/02/2026)
 ================================================
 
 This is the all-in-one version from Delfosse Aurore([ON7AUR](https://www.qrz.com/db/ON7AUR))
@@ -27,8 +27,8 @@ Driver which provides basic functionality for VINSA 1060plus T501 tablet:
 * 12 buttons on the tablet itself
 * 10 buttons on top
 * Correct X and Y positioning (two active area modes present:  Android Active Area & Full Tablet Active Area)
-* Pressure sensitivity ( able to read the values, but unable to pass it onto Graphics Software (? at least works with some) )
-* Anyway, it is not true driver. It is a console application that should be starteed after X from console ( /path_to_driver/driver-vin1060plus.bin & ). It can be started foreground (it support option --debug ) or in background with &.
+* Pressure sensitivity ( able to read the values, but unable to pass it onto Graphics Software (? at least works with some inc. Gimp. Need to be testing) )
+* Anyway, it is not true driver. It is a console application that should be starteed after X from console ( /path_to_driver/driver-vin1060plus.bin & ). It can be started foreground (it support option --debug ) or in background with &. Personally, I added it to my .xinitrc file, to start in the background, just before starting of the windows manager.
 
 Tablet has 4096 levels in both axes and 2047 levels of pressure ( Product description says 8092, but actual output readings are 2047 max).
 
