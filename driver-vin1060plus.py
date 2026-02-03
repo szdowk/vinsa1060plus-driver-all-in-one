@@ -28,9 +28,9 @@ import yaml
 # Global variables
 # ##########################################################################################################
 DEBUG = False	# Default mode, try "--debug" line option for debug mode.
-RESET_COOLDOWN_S = 10.0     # nie rób pełnego setup częściej niż co 20 s
-SHORT_STREAK_SOFT = 5       # po tylu krótkich ramach: soft re-claim iface 1
-SHORT_STREAK_HARD = 30      # po tylu: pełny setup (probe/full area)
+RESET_COOLDOWN_S = 10.0     # do not do full setup more frequent than x s
+SHORT_STREAK_SOFT = 5       # after those amount of short frames: soft re-claim iface 1
+SHORT_STREAK_HARD = 30      # after those amount of short frames: full setup (probe/full area)
 
 # ##########################################################################################################
 # Options
