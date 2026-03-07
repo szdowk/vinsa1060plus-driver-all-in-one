@@ -45,7 +45,7 @@ The person to discover this "hack" was Mr.Digimend himself and thanks to the [Yo
 # How to install
 1.  Clone this repository
 ```bash
-git clone https://github.com/extenebrisadlucem/vinsa1060plus-driver-all-in-one.git
+git clone https://github.com/szdowk/vinsa1060plus-driver-all-in-one.git
 ```
 2.  Change Directory and create a virtual environment for python
 ```bash
