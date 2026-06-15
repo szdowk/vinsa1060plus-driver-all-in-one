@@ -1,6 +1,6 @@
 <meta name="google-site-verification" content="GTdRjLssPUj3_gDeLmqs3jN1I4IQPgLGoCoegPG-E9U" />
 
-Vinsa 1060 plus - driver-all-in-one (3/02/2026)
+Vinsa 1060 plus - driver-all-in-one (15/06/2026)
 ================================================
 
 This is the all-in-one version from Delfosse Aurore([ON7AUR](https://www.qrz.com/db/ON7AUR))
@@ -33,6 +33,8 @@ Driver which provides basic functionality for VINSA 1060plus T501 tablet:
 Tablet has 4096 levels in both axes and 2047 levels of pressure ( Product description says 8092, but actual output readings are 2047 max).
 
 ## The progress so far...
+
+Currently, 2026, the tablet should work as a mouse. Some programs like Gimp or Krita should be able to use tip pressure depended tools.
 
 With linux Kernel 5+,  the graphics tablet should be detected but pen movement is restricted to Android Active Area (the small area on the tablet).  That driver was added to the kernel but interacts with the T503 chipset. 
 Thanks to [Digimend - https://github.com/DIGImend](https://github.com/DIGImend) for providing valuable functionality not just to 10moons Tablets, but to a variety of other popular Tablets.
@@ -88,7 +90,7 @@ exit
 
 Configuration of the driver placed in `~/.config/config-vin1060plus/config-vin1060plus.yaml` file.
 
-You may need to change the *vendor_id* and the *product_id* but I'm not sure (You device can have the same values as mine, but if it is not you can run the *lsusb* command to find yours).
+You may need to change the *vendor_id* and the *product_id* but I'm not sure (Your device can have the same values as mine, but if it is not you can run the *lsusb* command to find yours).
 
 Buttons assigned from top left (button 1) to bottom right (button 12) in the order from left to right. You can assign to them any button on the keyboard and their combinations separating them with a plus (+) sign.
 
