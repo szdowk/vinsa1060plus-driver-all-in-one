@@ -34,7 +34,7 @@ Tablet has 4096 levels in both axes and 2047 levels of pressure ( Product descri
 
 ## The progress so far...
 
-Currently, 2026, the tablet should work as a mouse. Some programs like Gimp or Krita should be able to use tip pressure depended tools.
+Currently, 2026, the tablet should work as a mouse. Some programs like Gimp or Krita should be able to use tip pressure depended tools. Take a look into source code for changes description and comments.
 
 Historic comments:
 With linux Kernel 5+,  the graphics tablet should be detected but pen movement is restricted to Android Active Area (the small area on the tablet).  That driver was added to the kernel but interacts with the T503 chipset. 
