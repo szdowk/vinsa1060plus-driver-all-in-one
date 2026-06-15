@@ -6,9 +6,13 @@
 # I 've added the management of buttons on top of the tablet. 
 # 21/09/2024 - Delfosse Aurore (ON7AUR) - V0.1 - first release
 # 30/06/2025 - Debugging ond fix for pen buttons support and some optimalizations (key map) by szdowk
-# 18/10/2025 - Debugging of "Resource busy" error, sleep/hibernate support and usb errors handle by szdowk
+# 18/10/2025 - Debugging of "Resource busy" error, slip/hibernate support and usb errors handle by szdowk
 # 15/01/2026 - Still more USB communication hardening by szdowk
-#
+# 15/06/2026 - I encountered strange behavior of the tablet after some system upgrades inc. kernel 5.15.209,
+#              xorg 1.20.14 and wayland 21.1.4. I'm not sure what was a exact cause. Anyway it looks like
+#              a new buttons logic and handling of timeouts solved this problem. Check config file for 
+#              changes. This version was tested for usage as mouse and with Gimp tools depended on pressure.
+#              Test platform is a patched Slackware 15 x86_64 with "testing" version of binutils-gcc-glibc.
 # ##########################################################################################################
 
 import os
@@ -27,7 +31,7 @@ import yaml
 # ##########################################################################################################
 # Global variables
 # ##########################################################################################################
-DEBUG = False	# Default mode, try "--debug" line option for debug mode.
+DEBUG = False        # Default mode, try "--debug" line option for debug mode.
 RESET_COOLDOWN_S = 10.0     # do not do full setup more frequent than x s
 SHORT_STREAK_SOFT = 5       # after those amount of short frames: soft re-claim iface 1
 SHORT_STREAK_HARD = 30      # after those amount of short frames: full setup (probe/full area)
@@ -245,10 +249,19 @@ if __name__ == "__main__":
     pressure_max = config["pen"]["max_pressure"]
     pressure_min = config["pen"]["pressure_min"]
     pressure_contact_threshold = config["pen"]["pressure_contact_threshold"]
+    pressure_contact_threshold_up = config["pen"]["pressure_contact_threshold_up"]
     #Unfortunately vin1060plus does not show 8192 pressure resolution.  #TODO: need to review pressure parameters
 
     pressed_prev = None
     pen_pressed_prev = None
+
+    #non symetric pressure threshold while changing button state down/up
+    pen_contact_prev = False
+    pressure_release_threshold = max(0, pressure_contact_threshold - pressure_contact_threshold_up)
+    
+    pen_button_down = False
+    last_pen_packet_ts = time.monotonic()
+    PEN_RELEASE_WATCHDOG_S = 0.12
 
     button_map = {
         (255, 49):  0,   # key E
@@ -291,6 +304,13 @@ if __name__ == "__main__":
                     err = e.args[0]
                 if err == 110:  # Operation timed out
                     idle_timeouts += 1
+                    # Idle/timeout means: do not leave any pen button/tool state latched.
+                    vpen.write(ecodes.EV_KEY, ecodes.BTN_LEFT, 0)
+                    vpen.write(ecodes.EV_KEY, ecodes.BTN_TOOL_PEN, 0)
+                    vpen.syn()
+                    pen_contact_prev = False
+                    pen_button_down = False
+    
                     delay = min(0.05, 0.001 * idle_timeouts)  # 50ms max
                     if DEBUG and idle_timeouts % 60 == 0:
                         print(f"[USB] idle timeout x{idle_timeouts} (delay={delay:.3f}s)")
@@ -315,24 +335,9 @@ if __name__ == "__main__":
             n = len(data)
             if(DEBUG) : print(f"pkt len={n} -> {list(data)}")
             if(DEBUG) : print(data) # shows button pressed array
-            pressed = None 
+            pressed = None
+            pen_contact = False
 
-#            if n < 7:
-#                short_streak += 1
-#                if short_streak >= 5:
-#                    if DEBUG: print("Too many short frames; reinit interface 1")
-#                    try:
-#                        usb.util.release_interface(dev, 1)
-#                    except Exception:
-#                        pass
-#                    dev.reset()
-#                    dev.set_configuration()
-#                    usb.util.claim_interface(dev, 1)
-#                    ep = dev[0].interfaces()[1].endpoints()[0]
-#                    short_streak = 0
-#                continue
-#            else:
-#                short_streak = 0
             if n < 7:
                 short_streak += 1
 
@@ -361,7 +366,7 @@ if __name__ == "__main__":
                             short_streak = 0
                         except usb.core.USBError as e:
                             if DEBUG: print("[USB] full reinit failed:", repr(e))
-                            # but not loop too agressive
+                            # but do not loop too agressive
                             last_hard_reset = now
                     # even if cooldown blocked, we still do not parse short frame
                 continue
@@ -373,57 +378,98 @@ if __name__ == "__main__":
 
             # ##############################################################################################
             # Position & pressure_contact
-            if n >= 7 and data[5] in [3,4,5,6]: #[192, 193]: # Pen actions
+            if n >= 7 and data[5] in [3,4,5,6]:  # Pen actions
                 pen_x = abs(max_x - (data[x1] * 255 + data[x2]))
                 pen_y = abs(max_y - (data[y1] * 255 + data[y2]))
-                pen_pressure = pressure_max - ( data[5] * 255 + data[6])
-                if(DEBUG) : print("pen_x , pen_y : " , pen_x ,"-", pen_y , " --- pen_pressure :" , pen_pressure )
-                if pen_pressure >= pressure_contact_threshold : # when Pen touches tablet surface detection value
-                    if(DEBUG) : print("tablet tapped")
-                    # ######################################################################################
-                    # Here check wich button on top of the tablet is pressed
-                    if pen_y>61200 :
-                        press_type = 1
-                        if pen_x==200 :
-                            if(DEBUG) : print("mute")
-                            pressed_prev=12
-                        if pen_x==607 :
-                            if(DEBUG) : print("vol-")
-                            pressed_prev=13
-                        if pen_x==1015 :
-                            if(DEBUG) : print("vol+")
-                            pressed_prev=14
-                        if pen_x==1422 :
-                            if(DEBUG) : print("note")
-                            pressed_prev=15
-                        if pen_x==1829 :
-                            if(DEBUG) : print("play/pause")
-                            pressed_prev=16
-                        if pen_x==2237 :
-                            if(DEBUG) : print("prev")
-                            pressed_prev=17
-                        if pen_x==2644 :
-                            if(DEBUG) : print("next")
-                            pressed_prev=18
-                        if pen_x==3052 :
-                            if(DEBUG) : print("home")
-                            pressed_prev=19
-                        if pen_x==3459 :
-                            if(DEBUG) : print("calc")
-                            pressed_prev=20
-                        if pen_x==3866 :
-                            if(DEBUG) : print("Desk")
-                            pressed_prev=21
-                    else :
-                        vpen.write(ecodes.EV_KEY, ecodes.BTN_TOOL_PEN, 1 )
-                        #vpen.write(ecodes.EV_KEY, ecodes.BTN_TOUCH, 1 ) #ecodes.BTN_TOUCH not executed ever since src code mods from original driver.py
-                        vpen.write(ecodes.EV_KEY, ecodes.BTN_MOUSE, 1 ) # ecodes.BTN_MOUSE works, while ecodes.BTN_TOUCH does not execute
+
+                raw_pressure = data[5] * 256 + data[6]
+                pen_pressure = pressure_max - raw_pressure
+
+                if pen_pressure < 0:
+                    pen_pressure = 0
+                elif pen_pressure > pressure_max:
+                    pen_pressure = pressure_max
+
+                #pen_contact = pen_pressure >= pressure_contact_threshold
+                if pen_contact_prev:
+                    pen_contact = pen_pressure >= pressure_release_threshold
                 else:
-                    vpen.write(ecodes.EV_KEY, ecodes.BTN_MOUSE, 0 ) # BTN_MOUSE up event
-                vpen.syn()
-                vpen.write(ecodes.EV_ABS, ecodes.ABS_X, pen_x)
-                vpen.write(ecodes.EV_ABS, ecodes.ABS_Y, pen_y)
-                vpen.write(ecodes.EV_ABS, ecodes.ABS_PRESSURE, pen_pressure)
+                    pen_contact = pen_pressure >= pressure_contact_threshold
+
+                if DEBUG:
+                    print(
+                        "pen_x, pen_y:", pen_x, "-", pen_y,
+                        " threshold:", pressure_contact_threshold,
+                        " contact:", pen_contact,
+                        " release_threshold:", pressure_release_threshold,
+                        " prev_contact:", pen_contact_prev,
+                        " raw_pressure:", raw_pressure,
+                        " --- pen_pressure:", pen_pressure
+                    )
+
+                # Tablet top button area: nie traktuj jako normalnego kliknięcia pióra.
+                if pen_y > 61200 and pen_contact:
+                    press_type = 1
+                    if pen_x == 200:
+                        if DEBUG: print("mute")
+                        pressed_prev = 12
+                    elif pen_x == 607:
+                        if DEBUG: print("vol-")
+                        pressed_prev = 13
+                    elif pen_x == 1015:
+                        if DEBUG: print("vol+")
+                        pressed_prev = 14
+                    elif pen_x == 1422:
+                        if DEBUG: print("note")
+                        pressed_prev = 15
+                    elif pen_x == 1829:
+                        if DEBUG: print("play/pause")
+                        pressed_prev = 16
+                    elif pen_x == 2237:
+                        if DEBUG: print("prev")
+                        pressed_prev = 17
+                    elif pen_x == 2644:
+                        if DEBUG: print("next")
+                        pressed_prev = 18
+                    elif pen_x == 3052:
+                        if DEBUG: print("home")
+                        pressed_prev = 19
+                    elif pen_x == 3459:
+                        if DEBUG: print("calc")
+                        pressed_prev = 20
+                    elif pen_x == 3866:
+                        if DEBUG: print("Desk")
+                        pressed_prev = 21
+
+                    # Ważne: w strefie górnych przycisków nie zostawiaj kliknięcia pióra.
+                    vpen.write(ecodes.EV_KEY, ecodes.BTN_LEFT, 0)
+                    vpen.write(ecodes.EV_KEY, ecodes.BTN_TOOL_PEN, 0)
+                    vpen.syn()
+
+                else:
+                    # Jedna spójna ramka stanu pióra.
+                    vpen.write(ecodes.EV_KEY, ecodes.BTN_LEFT, 1 if pen_contact else 0)
+                    vpen.write(ecodes.EV_KEY, ecodes.BTN_TOOL_PEN, 1)
+
+                    vpen.write(ecodes.EV_ABS, ecodes.ABS_X, pen_x)
+                    vpen.write(ecodes.EV_ABS, ecodes.ABS_Y, pen_y)
+                    vpen.write(ecodes.EV_ABS, ecodes.ABS_PRESSURE, pen_pressure)
+
+                    vpen.syn()
+
+                    pen_contact_prev = pen_contact
+                    pen_button_down = pen_contact
+                    last_pen_packet_ts = time.monotonic()
+
+            else:
+            # Pakiet poprawnej długości, ale nie jest rozpoznanym pakietem pióra.
+            # Nie zostawiaj aktywnego kontaktu.
+                if pen_button_down or pen_contact_prev:
+                    vpen.write(ecodes.EV_KEY, ecodes.BTN_LEFT, 0)
+                    vpen.write(ecodes.EV_KEY, ecodes.BTN_TOOL_PEN, 0)
+                    vpen.syn()
+                    pen_contact_prev = False
+                    pen_button_down = False
 
             # ##############################################################################################
             # Side Buttons
@@ -434,16 +480,17 @@ if __name__ == "__main__":
             if(DEBUG) : print("--- key_pressed : " , key_pressed )
 
             pressed = button_map.get(key_pressed, None)
-                                                                                                                
-            # press types: 0 - up; 1 - down; 2 - hold
-            #press_type = 0 #moved begin loop for upper buttons
-            if key_pressed != (255,51) : # Key_code tuple when no keys pressed
+
+            if pressed is not None:
                 press_type = 1
-                # TODO : [ADE] hold with timer - but usage?
-                # if pressed_prev == pressed :   #2-hold is not working nicely
-                #    press_type = 2
                 pressed_prev = pressed
-            
+            elif key_pressed == (255, 51):
+                press_type = 0
+            else:
+                # unknown/noisy tablet-button packet: ignore it, do not replay previous button
+                press_type = 0
+                pressed_prev = None
+
             if pressed_prev is not None:
                 if(DEBUG) :
                     print("Key_pressed detected : ", pressed_prev , " :: ", config["actions"]["tablet_buttons"][pressed_prev] ,
@@ -484,9 +531,8 @@ if __name__ == "__main__":
             # remember button state
             pen_pressed_prev = curr
 
-
             # Flush
-            vpen.syn()
+            #vpen.syn()
             vbtn.syn()
 
             # reset pen button
@@ -497,7 +543,16 @@ if __name__ == "__main__":
         except usb.core.USBTimeoutError:
             # Second case of timeout (USBTimeoutError in my version of PyUSB)
             idle_timeouts += 1
+
+            # Idle/timeout means: do not leave any pen button/tool state latched.
+            vpen.write(ecodes.EV_KEY, ecodes.BTN_LEFT, 0)
+            vpen.write(ecodes.EV_KEY, ecodes.BTN_TOOL_PEN, 0)
+            vpen.syn()
+            pen_contact_prev = False
+            pen_button_down = False
+
             delay = min(0.05, 0.001 * idle_timeouts)
+
             if DEBUG and idle_timeouts % 60 == 0:
                 print(f"[USB] idle timeout x{idle_timeouts} (delay={delay:.3f}s)")
             time.sleep(delay)
@@ -557,4 +612,3 @@ if __name__ == "__main__":
             if DEBUG: print("[MAIN] Unexpected exception:", e)
             time.sleep(0.05)
             continue
-
