@@ -6,20 +6,22 @@ pen:
     max_y: 4096     #moving the tablet pen as far down as possible (use "swap_direction_y:true" to invert if needed)
     resolution_x: 1
     resolution_y: 1
-    max_pressure: 2048   # manual says 8192 but cheap chinese chip reports outputs much less values
-    pressure_min: 300  # when pressing the tablet pen as hard as functionally possible (yours may vary)
-    pressure_contact_threshold: 625    # when making contact with the tablet surface (yours may vary)
+    max_pressure: 2048   # manual says 8192 but cheap chinese chip reports outputs much less values 2048
+    pressure_min: 900  # when pressing the tablet pen as hard as functionally possible (yours may vary) 300
+    pressure_contact_threshold: 600    # when making contact with the tablet surface (yours may vary) 550
     pressure_contact_threshold_up: 50  # change of pressure when releasing contact with the tablet surface (yours may vary)
 actions:
-    pen_touch: BTN_LEFT
+    pen_touch:
+        - BTN_LEFT
     pen: BTN_TOOL_PEN
     pen_buttons:
     # https://sites.uclouvain.be/SystInfo/usr/include/linux/input.h.html
     # https://github.com/torvalds/linux/blob/master/include/uapi/linux/input-event-codes.h
     #for Buttons :: python -c "from evdev import ecodes; print([x for x in dir(ecodes) if 'BTN_' in x])"
-        - BTN_STYLUS                    #1st button closest to tip
-        #- BTN_RIGHT                     # 1st Btn for right click -> We can't do this https://www.kernel.org/doc/html/v4.14/input/event-codes.html (didn't find why)
-        - BTN_STYLUS2                   #2nd button
+        #- BTN_STYLUS                  #1st button closest to tip
+        - BTN_MIDDLE                  #1st button as middle mouse button
+        #- BTN_STYLUS2                 #2nd button as stylus2
+        - BTN_RIGHT                   #2nd button as right mouse button
     tablet_buttons: 
     #for Keys :: python -c "from evdev import ecodes; print([x for x in dir(ecodes) if 'KEY_' in x])"
         - KEY_E                         #labelled 'E'
