@@ -13,16 +13,17 @@
 #              a new buttons logic and handling of timeouts solved this problem. Check config file for 
 #              changes. This version was tested for usage as mouse and with Gimp tools depended on pressure.
 #              Test platform is a patched Slackware 15 x86_64 with "testing" version of binutils-gcc-glibc.
-#              15.06.2026 comment: Anyway, currently mixed-mode devices (configured as mouse and tablet at 
+#              (!)15.06.2026 comment: Anyway, currently mixed-mode devices (configured as mouse and tablet at 
 #                once) do not work properly.  Previously it was possible to configure "pen_touch: -BTN_MOUSE" 
-#                (or -BTN_LEFT) and "pen: BTN_TOOL_PEN" at once what gave  effect of perfect mouse 
-#                emulation and detection of pressure in Gimp and Krita.
+#                (or -BTN_LEFT) and "pen: BTN_TOOL_PEN" at once what gave effect of perfect mouse 
+#                emulation and detection of stylus tip pressure in Gimp and Krita.
 #                Unfortunately, currently, declaration "pen: BTN_TOOL_PEN" have strange behavior. It adds 
-#                additional mouse button click&hold (BTN_LEFT=1) on xorg level when a stylus go into tablet 
-#                radius. You will feel it as very annoying behavior. 
+#                additional mouse button click&hold (BTN_LEFT=1 without contact between stylus tip and tablet
+#                surface) on xorg level when a stylus go into tablet radius. You will feel it as very 
+#                annoying behavior. 
 #                So, if you will work with this device just as mouse or pointer, comment out 
 #                "pen: BTN_TOOL_PEN" declaration in config file. Gimp and Krita will work, however without 
-#                pressure detection. Looks like it is not our driver but xorg behavior.
+#                stylus tip pressure detection. Looks like it is not our driver but xorg behavior or bug.
 # ##########################################################################################################
 
 import os
