@@ -1,6 +1,6 @@
-# ##########################################################################################################
-# Driver for tablette VINSA 1060 plus based on «f-caro» (https://github.com/f-caro), and inspired by
-# Alexandr Vasilyev - «alex-s-v» (https://github.com/alex-s-v)
+#############################################################################################################
+# Driver for tablette VINSA 1060 plus by szdowk based on «f-caro» (https://github.com/f-caro), and inspired 
+# by Alexandr Vasilyev - «alex-s-v» (https://github.com/alex-s-v)
 #
 # I've put everything inside this script (reclaim interface) - open full area - source of Alexandr and
 # I 've added the management of buttons on top of the tablet. 
@@ -10,21 +10,27 @@
 # 15/01/2026 - Still more USB communication hardening by szdowk
 # 15/06/2026 - I encountered strange behavior of the tablet after some system upgrades inc. kernel 5.15.209,
 #              xorg 1.20.14 and wayland 21.1.4. I'm not sure what was a exact cause. Anyway it looks like
-#              a new buttons logic and handling of timeouts solved this problem. Check config file for 
+#              a new buttons logic and handling of timeouts solved this problem. Check config file for
 #              changes. This version was tested for usage as mouse and with Gimp tools depended on pressure.
 #              Test platform is a patched Slackware 15 x86_64 with "testing" version of binutils-gcc-glibc.
-#              (!)15.06.2026 comment: Anyway, currently mixed-mode devices (configured as mouse and tablet at 
-#                once) do not work properly.  Previously it was possible to configure "pen_touch: -BTN_MOUSE" 
-#                (or -BTN_LEFT) and "pen: BTN_TOOL_PEN" at once what gave effect of perfect mouse 
+#              (!)15.06.2026 comment: Anyway, currently mixed-mode devices (configured as mouse and tablet at
+#                once) do not work properly.  Previously it was possible to configure "pen_touch: -BTN_MOUSE"
+#                (or -BTN_LEFT) and "pen: BTN_TOOL_PEN" at once what gave effect of perfect mouse
 #                emulation and detection of stylus tip pressure in Gimp and Krita.
-#                Unfortunately, currently, declaration "pen: BTN_TOOL_PEN" have strange behavior. It adds 
+#                Unfortunately, currently, declaration "pen: BTN_TOOL_PEN" have strange behavior. It adds
 #                additional mouse button click&hold (BTN_LEFT=1 without contact between stylus tip and tablet
-#                surface) on xorg level when a stylus go into tablet radius. You will feel it as very 
-#                annoying behavior. 
-#                So, if you will work with this device just as mouse or pointer, comment out 
-#                "pen: BTN_TOOL_PEN" declaration in config file. Gimp and Krita will work, however without 
-#                stylus tip pressure detection. Looks like it is not our driver but xorg behavior or bug.
-# ##########################################################################################################
+#                surface) on xorg level when a stylus go into tablet radius. You will feel it as very
+#                annoying behavior.
+#                So, if you will work with this device just as mouse or pointer, comment out
+#                "pen: BTN_TOOL_PEN" declaration in config file. Gimp and Krita will work, however without
+#                stylus tip pressure detection. (szdowk)
+# 16/06/2026 - OK. It appeared, that with "pen: BTN_TOOL_PEN" option, libinput/X generated its own "button
+#              press 1/0" (BTN_LEFT=1/0) based only on tip pressure(!). This tablet never return pressure=0
+#              (even when the stylus tip hoover in the air above tablet surface the pressure is equal to
+#              175...180), so "X" always generated its own BTN_LEFT=1 when the stylus go into the radius
+#              of tablet and BTN_LEFT=0 when go out. Fixed now. The tablet should work as mouse and pressure
+#              tool at once. (szdowk)
+#############################################################################################################
 
 import os
 import sys
@@ -464,7 +470,7 @@ if __name__ == "__main__":
 
                     vpen.write(ecodes.EV_ABS, ecodes.ABS_X, pen_x)
                     vpen.write(ecodes.EV_ABS, ecodes.ABS_Y, pen_y)
-                    vpen.write(ecodes.EV_ABS, ecodes.ABS_PRESSURE, pen_pressure)
+                    vpen.write(ecodes.EV_ABS, ecodes.ABS_PRESSURE, pen_pressure if pen_contact else 0)
 
                     vpen.syn()
 
