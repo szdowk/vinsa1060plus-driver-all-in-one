@@ -13,6 +13,7 @@ pen:
 actions:
     pen_touch:
         - BTN_LEFT
+        #- BTN_TOUCH #In current implementation it is internally mapped as BTN_LEFT(!), so it is nonsense(?) to use it.
     pen: BTN_TOOL_PEN
     # 15.06.2026 comment: Anyway, currently mixed-mode devices (configured as mouse and tablet at once) do not work properly.
     # Previously it was possible to configure "pen_touch: -BTN_MOUSE" (or -BTN_LEFT) and "pen: BTN_TOOL_PEN" at once what gave 
