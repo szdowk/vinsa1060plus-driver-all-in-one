@@ -36,9 +36,9 @@ Tablet has 4096 levels in both axes and 2047 levels of pressure ( Product descri
 
 Currently, 2026, the tablet should work as a mouse. Some programs like Gimp or Krita should be able to use tip pressure depended tools. Take a look into source code for changes description and comments. 
 
-15.06.2026 comment: Anyway, currently mixed-mode devices (configured as mouse and tablet) at once do not work properly. Previously it was possible to configure "pen_touch: -BTN_MOUSE" (or -BTN_LEFT) and "pen: BTN_TOOL_PEN" what gave effect of perfect mouse emulation and detection of pressure in Gimp and Krita.
+15.06.2026 comment: Anyway, currently mixed-mode devices (configured as mouse and tablet at once) do not work properly. Previously it was possible to configure "pen_touch: -BTN_MOUSE" (or -BTN_LEFT) and "pen: BTN_TOOL_PEN" what gave effect of perfect mouse emulation and detection of pressure in Gimp and Krita.
 
-Unfortunately, currently declaration "pen: BTN_TOOL_PEN" have strange behavior. It add additional mouse button click&hold (BTN_LEFT=1) on xorg level when a stylus go into tablet radius. You will feel it as annoying behavior. So, if you will work with this device as mouse or pointer, comment out "pen: BTN_TOOL_PEN" declaration in config file. Gimp and Krita will work, however without pressure detection. It looks like it is not our driver but xorg behavior.
+Unfortunately, currently declaration "pen: BTN_TOOL_PEN" have strange behavior. It adds additional mouse button click&hold (BTN_LEFT=1) on xorg level when a stylus go into tablet radius (without contact between stylus tip and tablet). You will feel it as very annoying behavior. So, if you will work with this device just as mouse or pointer and do not need tip pressure detection, comment out "pen: BTN_TOOL_PEN" declaration in config file. Gimp and Krita will work, however without tip pressure. It looks like it is not our driver but xorg behavior or bug.
 
 Historic comments:
 With linux Kernel 5+,  the graphics tablet should be detected but pen movement is restricted to Android Active Area (the small area on the tablet).  That driver was added to the kernel but interacts with the T503 chipset. 
