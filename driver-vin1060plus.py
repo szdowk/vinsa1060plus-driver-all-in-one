@@ -24,7 +24,7 @@
 #                So, if you will work with this device just as mouse or pointer, comment out
 #                "pen: BTN_TOOL_PEN" declaration in config file. Gimp and Krita will work, however without
 #                stylus tip pressure detection. (szdowk)
-# 16/06/2026 - OK. It appeared, that with "pen: BTN_TOOL_PEN" option, libinput/X generated its own "button
+# 16/06/2026 - OK. It appeared, that with "pen: BTN_TOOL_PEN" option, libinput/X generate its own "button
 #              press 1/0" (BTN_LEFT=1/0) based only on tip pressure(!). This tablet never return pressure=0
 #              (even when the stylus tip hoover in the air above tablet surface the pressure is equal to
 #              175...180), so "X" always generated its own BTN_LEFT=1 when the stylus go into the radius
