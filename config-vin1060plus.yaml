@@ -6,14 +6,14 @@ pen:
     max_y: 4096     #moving the tablet pen as far down as possible (use "swap_direction_y:true" to invert if needed)
     resolution_x: 1
     resolution_y: 1
-    max_pressure: 2048   # manual says 8192 but cheap chinese chip reports outputs much less values 2048
-    pressure_min: 900  # when pressing the tablet pen as hard as functionally possible (yours may vary) 300
-    pressure_contact_threshold: 550    # when making contact with the tablet surface (yours may vary) 550
-    pressure_contact_threshold_up: 50  # change of pressure when releasing contact with the tablet surface (yours may vary)
+    max_pressure: 2048   # manual says 8192 but cheap chinese chip reports outputs much less values
+    pressure_min: 900  # when pressing the tablet pen as hard as functionally possible (yours may vary) (currently mot used)
+    pressure_contact_threshold: 550    # when making contact with the tablet surface (yours may vary)
+    pressure_contact_threshold_up: 30  # change of pressure when releasing contact with the tablet surface - hysteresis (yours may vary)
 actions:
     pen_touch:
         - BTN_LEFT
-        #- BTN_TOUCH #In current implementation it is internally mapped as BTN_LEFT(!), so it is a nonsense(?) to use it.
+        #- BTN_TOUCH #In current implementations it is internally mapped as BTN_LEFT(!), so it is a nonsense(?) to use it.
     pen: BTN_TOOL_PEN
     # 16.06.2026 comment: Should work as mixed-mode devices (configured as mouse and tablet at once).
     # Look into source comment if interested in internal life of xinput ;)
