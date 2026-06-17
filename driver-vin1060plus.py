@@ -1,12 +1,12 @@
 #############################################################################################################
-# Driver for tablette VINSA 1060 plus by szdowk based on «f-caro» (https://github.com/f-caro), and inspired 
-# by Alexandr Vasilyev - «alex-s-v» (https://github.com/alex-s-v)
+# Driver for tablette VINSA 1060 plus based on «f-caro» (https://github.com/f-caro), and inspired by
+# Alexandr Vasilyev - «alex-s-v» (https://github.com/alex-s-v)
 #
 # I've put everything inside this script (reclaim interface) - open full area - source of Alexandr and
 # I 've added the management of buttons on top of the tablet. 
 # 21/09/2024 - Delfosse Aurore (ON7AUR) - V0.1 - first release
 # 30/06/2025 - Debugging ond fix for pen buttons support and some optimalizations (key map) by szdowk
-# 18/10/2025 - Debugging of "Resource busy" error, sleep/hibernate support and usb errors handle by szdowk
+# 18/10/2025 - Debugging of "Resource busy" error, slip/hibernate support and usb errors handle by szdowk
 # 15/01/2026 - Still more USB communication hardening by szdowk
 # 15/06/2026 - I encountered strange behavior of the tablet after some system upgrades inc. kernel 5.15.209,
 #              xorg 1.20.14 and wayland 21.1.4. I'm not sure what was a exact cause. Anyway it looks like
@@ -30,6 +30,8 @@
 #              175...180), so "X" always generated its own BTN_LEFT=1 when the stylus go into the radius
 #              of tablet and BTN_LEFT=0 when go out. Fixed now. The tablet should work as mouse and pressure
 #              tool at once with "pen: BTN_TOOL_PEN" declaration in config file. (szdowk)
+# 17/06/2026 - Top buttons work again(?). At least "mute","volume up" and "volume down". The rest top buttons
+#              should be configured in KDE.
 #############################################################################################################
 
 import os
@@ -277,8 +279,6 @@ if __name__ == "__main__":
     pressure_release_threshold = max(0, pressure_contact_threshold - pressure_contact_threshold_up)
     
     pen_button_down = False
-    last_pen_packet_ts = time.monotonic()
-    PEN_RELEASE_WATCHDOG_S = 0.12
 
     button_map = {
         (255, 49):  0,   # key E
@@ -304,6 +304,8 @@ if __name__ == "__main__":
     last_hard_reset = 0.0
     short_streak = 0
     last_hard_reset = 0.0
+    top_button_prev = None
+
     while True:
         try:
             # 1) Read with timeout (1 s)
@@ -425,38 +427,60 @@ if __name__ == "__main__":
                     )
 
                 # Tablet top button area: nie traktuj jako normalnego kliknięcia pióra.
-                if pen_y > 61200 and pen_contact:
-                    press_type = 1
+                if pen_y > 61200 : #and pen_contact:
+                    #press_type = 1
+                    top_pressed = None
                     if pen_x == 200:
                         if DEBUG: print("mute")
-                        pressed_prev = 12
+                        top_pressed = 12
                     elif pen_x == 607:
                         if DEBUG: print("vol-")
-                        pressed_prev = 13
+                        top_pressed = 13
                     elif pen_x == 1015:
                         if DEBUG: print("vol+")
-                        pressed_prev = 14
+                        top_pressed = 14
                     elif pen_x == 1422:
                         if DEBUG: print("note")
-                        pressed_prev = 15
+                        top_pressed = 15
                     elif pen_x == 1829:
                         if DEBUG: print("play/pause")
-                        pressed_prev = 16
+                        top_pressed = 16
                     elif pen_x == 2237:
                         if DEBUG: print("prev")
-                        pressed_prev = 17
+                        top_pressed = 17
                     elif pen_x == 2644:
                         if DEBUG: print("next")
-                        pressed_prev = 18
+                        top_pressed = 18
                     elif pen_x == 3052:
                         if DEBUG: print("home")
-                        pressed_prev = 19
+                        top_pressed = 19
                     elif pen_x == 3459:
                         if DEBUG: print("calc")
-                        pressed_prev = 20
+                        top_pressed = 20
                     elif pen_x == 3866:
                         if DEBUG: print("Desk")
-                        pressed_prev = 21
+                        top_pressed = 21
+
+                    if DEBUG: print("We are in pen_y > 61200 block, top_pressed: ", top_pressed)
+
+
+                    if pen_contact and top_pressed is not None and top_pressed != top_button_prev:
+                        key_codes = config["actions"]["tablet_buttons"][top_pressed].split("+")
+
+                        for key in key_codes:
+                            act = ecodes.ecodes[key]
+                            vbtn.write(ecodes.EV_KEY, act, 1)
+                        vbtn.syn()
+
+                        for key in key_codes:
+                            act = ecodes.ecodes[key]
+                            vbtn.write(ecodes.EV_KEY, act, 0)
+                        vbtn.syn()
+
+                        top_button_prev = top_pressed
+
+                    if not pen_contact:
+                        top_button_prev = None
 
                     # Ważne: w strefie górnych przycisków nie zostawiaj kliknięcia pióra.
                     vpen.write(ecodes.EV_KEY, ecodes.BTN_LEFT, 0)
@@ -464,6 +488,8 @@ if __name__ == "__main__":
                     vpen.syn()
 
                 else:
+                    top_button_prev = None
+
                     # Jedna spójna ramka stanu pióra.
                     vpen.write(ecodes.EV_KEY, ecodes.BTN_LEFT, 1 if pen_contact else 0)
                     vpen.write(ecodes.EV_KEY, ecodes.BTN_TOOL_PEN, 1)
@@ -476,7 +502,6 @@ if __name__ == "__main__":
 
                     pen_contact_prev = pen_contact
                     pen_button_down = pen_contact
-                    last_pen_packet_ts = time.monotonic()
 
             else:
             # Pakiet poprawnej długości, ale nie jest rozpoznanym pakietem pióra.
@@ -490,10 +515,10 @@ if __name__ == "__main__":
 
             # ##############################################################################################
             # Side Buttons
-            if n >= 13:
+            if n >= 13 :
                 key_pressed = (data[11], data[12])
             else:
-                key_pressed = (255, 51)  # „brak klawisza”
+                key_pressed = (255, 51) # „brak klawisza”
             if(DEBUG) : print("--- key_pressed : " , key_pressed )
 
             pressed = button_map.get(key_pressed, None)
