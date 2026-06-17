@@ -6,7 +6,7 @@
 # I 've added the management of buttons on top of the tablet. 
 # 21/09/2024 - Delfosse Aurore (ON7AUR) - V0.1 - first release
 # 30/06/2025 - Debugging ond fix for pen buttons support and some optimalizations (key map) by szdowk
-# 18/10/2025 - Debugging of "Resource busy" error, slip/hibernate support and usb errors handle by szdowk
+# 18/10/2025 - Debugging of "Resource busy" error, sleep/hibernate support and usb errors handle by szdowk
 # 15/01/2026 - Still more USB communication hardening by szdowk
 # 15/06/2026 - I encountered strange behavior of the tablet after some system upgrades inc. kernel 5.15.209,
 #              xorg 1.20.14 and wayland 21.1.4. I'm not sure what was a exact cause. Anyway it looks like
