@@ -29,7 +29,7 @@
 #              (even when the stylus tip hoover in the air above tablet surface the pressure is equal to
 #              175...180), so "X" always generated its own BTN_LEFT=1 when the stylus go into the radius
 #              of tablet and BTN_LEFT=0 when go out. Fixed now. The tablet should work as mouse and pressure
-#              tool at once. (szdowk)
+#              tool at once with "pen: BTN_TOOL_PEN" declaration in config file. (szdowk)
 #############################################################################################################
 
 import os
