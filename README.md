@@ -65,7 +65,7 @@ pip install -r requirements.txt
 From here, your driver is runable, but may be slow on some systems...
 ```bash
 # if you want to give a try
-python driver_vin1060plus.py
+python driver-vin1060plus.py
 ```
 3.  Create a converted/compiled system level application
 In order to increase speed, convert your python in C and build it as a system application.
