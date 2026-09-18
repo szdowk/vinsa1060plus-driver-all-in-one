@@ -30,8 +30,9 @@
 #              175...180), so "X" always generated its own BTN_LEFT=1 when the stylus go into the radius
 #              of tablet and BTN_LEFT=0 when go out. Fixed now. The tablet should work as mouse and pressure
 #              tool at once with "pen: BTN_TOOL_PEN" declaration in config file. (szdowk)
-# 17/06/2026 - Top buttons work again(?). At least "mute","volume up" and "volume down". The rest top buttons
+# 17/06/2026 - Top buttons work again(?). At least "mute", "volume up" and "volume down". The rest buttons
 #              should be configured in KDE.
+# 17/09/2026 - Another USB error handling.
 #############################################################################################################
 
 import os
@@ -609,12 +610,12 @@ if __name__ == "__main__":
             continue
     
         except usb.core.USBError as e:
-            # Critical USB errors (ie. 19 after sleep/hibernation – no device)
+            # Critical USB errors (ie. 5/19 after sleep/hibernation)
             err = getattr(e, "errno", None)
             if err is None and e.args:
                 err = e.args[0]
-            if err == 19:
-                if DEBUG: print("[USB] Device gone (Errno 19). Reconnecting…")
+            if err in (5, 19):
+                if DEBUG: print(f"[USB] Device error (Errno {err}). Reconnecting…")
                 try: usb.util.release_interface(dev, 1)
                 except Exception: pass
                 try: usb.util.dispose_resources(dev)
