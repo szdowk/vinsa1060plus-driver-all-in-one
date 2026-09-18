@@ -108,7 +108,7 @@ Not a nice experience, feels weird --- but at least it is nice to know that you 
 
 ## Changing Button/Key shortcuts
 
-`config-vin1060plus.yml` contains a Key code list ( variable `tablet_buttons` ) that allows the user to edit the 12 buttons found on the left-side of the graphics tablet.
+`config-vin1060plus.yaml` contains a Key code list ( variable `tablet_buttons` ) that allows the user to edit the 12 buttons found on the left-side of the graphics tablet.
 
 To list all the possible Key codes you may run:
 ```
@@ -119,7 +119,7 @@ example output:
 ['EV_KEY', 'KEY', 'KEY_0', 'KEY_1', 'KEY_102ND', 'KEY_10CHANNELSDOWN', 'KEY_10CHANNELSUP', 'KEY_2', 'KEY_3', 'KEY_3D_MODE', 'KEY_4', 'KEY_5', 'KEY_6', 'KEY_7', 'KEY_8', 'KEY_9',...
 
 ```
-`config-vin1060plus.yml` also contains a BTN code list ( variable `pen_buttons` ) that allows the user to edit the 2 buttons found on passive stylus pen.
+`config-vin1060plus.yaml` also contains a BTN code list ( variable `pen_buttons` ) that allows the user to edit the 2 buttons found on passive stylus pen.
 
 To list all the possible Mouse/Stylus BTN codes you may run:
 ```
@@ -162,7 +162,7 @@ The forum that got me started with finding a simple solution to my cheap graphic
 
 # Known issues
 
-* Pressure sensitivity is actually Z-axis height,  where digital 0 is approx 2mm below the graphical tablet surface and digital 8192 is approx 25mm above the graphical tablet. Useful "Pressure sensitivity" values show up in the range of digital 400 and digital 2048.  In `config-vin1060plus.yml` file,  the property  `pressure_contact_threshold` was chosen by trial and error.  Colder temperatures affect the "pressure sensitivity" range.
+* Pressure sensitivity is actually Z-axis height,  where digital 0 is approx 2mm below the graphical tablet surface and digital 8192 is approx 25mm above the graphical tablet. Useful "Pressure sensitivity" values show up in the range of digital 400 and digital 2048.  In `config-vin1060plus.yaml` file,  the property  `pressure_contact_threshold` was chosen by trial and error.  Colder temperatures affect the "pressure sensitivity" range.
 
 * `DEBUG = True` , [flag variable exists](https://github.com/f-caro/10moons-driver-vin1060plus/blob/a9cb0839de7a56f56fe0facc96c7e4c2cf0e86de/driver-vin1060plus.py#L12) that helps debug the typical behaviour surrounding the driver interaction with T501 graphics compatible tablet.  To be honest, it's just print() statements alllll theee waaayyyy downnnn. :)
 
