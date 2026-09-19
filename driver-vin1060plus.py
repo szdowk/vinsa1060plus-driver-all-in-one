@@ -33,6 +33,7 @@
 # 17/06/2026 - Top buttons work again(?). At least "mute", "volume up" and "volume down". The rest buttons
 #              should be configured in KDE.
 # 17/09/2026 - Another USB error handling.
+# 18/09/2026 - Replace yaml.FullLoader with yaml.safe_load.
 #############################################################################################################
 
 import os
@@ -176,7 +177,8 @@ if __name__ == "__main__":
 
     # Loading tablet configuration
     with open(path, "r") as f:
-        config = yaml.load(f, Loader=yaml.FullLoader)
+        config = yaml.safe_load(f)
+        # config = yaml.load(f, Loader=yaml.FullLoader)
 
     # tabus=$(lsusb|grep 08f2:6811|gawk '{print $2;print $4}'|tr '\n' ' '|tr ':' ' ')
     # -> adress is in the yaml
@@ -302,8 +304,6 @@ if __name__ == "__main__":
 
     short_streak = 0
     idle_timeouts = 0
-    last_hard_reset = 0.0
-    short_streak = 0
     last_hard_reset = 0.0
     top_button_prev = None
 
